@@ -1,4 +1,5 @@
 # AGENTS.md — Loup-Garou Companion Platform
+
 # AI Coding Agent Instructions
 
 > This file is the **single source of truth** for any AI coding agent working on this project.
@@ -11,6 +12,7 @@
 You are implementing a real-life social deduction game companion app (inspired by Les Loups-Garous de Thiercelieux). Players are physically in the same room. The app manages hidden information, roles, narration, game state, voting, and night actions — while keeping the human social experience at the center.
 
 **Before every task:**
+
 1. Re-read this file in full
 2. Identify which layer you are working in (Controller / Service / Engine / Model / Livewire)
 3. Confirm you are not violating any Architecture Contract (Section 5)
@@ -20,16 +22,16 @@ You are implementing a real-life social deduction game companion app (inspired b
 
 ## 1. Tech Stack
 
-| Layer | Technology | Notes |
-|---|---|---|
-| Backend framework | Laravel (latest stable) | PHP 8.2+ |
-| Frontend templating | Blade | |
-| Reactive UI components | Livewire v3 | No Inertia, no Vue, no React |
-| CSS framework | TailwindCSS v3 | Dark theme, atmospheric |
-| Real-time communication | Laravel Reverb | WebSockets only, no Pusher |
-| Local tunnel / hosting | Ngrok | MVP only |
-| Language support | Bilingual FR / EN | Laravel lang files |
-| Database | MySQL / SQLite (local) | No Redis for MVP |
+| Layer                   | Technology              | Notes                        |
+| ----------------------- | ----------------------- | ---------------------------- |
+| Backend framework       | Laravel (latest stable) | PHP 8.2+                     |
+| Frontend templating     | Blade                   |                              |
+| Reactive UI components  | Livewire v3             | No Inertia, no Vue, no React |
+| CSS framework           | TailwindCSS v3          | Dark theme, atmospheric      |
+| Real-time communication | Laravel Reverb          | WebSockets only, no Pusher   |
+| Local tunnel / hosting  | Ngrok                   | MVP only                     |
+| Language support        | Bilingual FR / EN       | Laravel lang files           |
+| Database                | MySQL (local)           | No Redis for MVP             |
 
 **Do not introduce any dependency not listed above without asking first.**
 
@@ -381,13 +383,14 @@ WinConditionChecker::check(GameState $state);
 
 ## 6. Real-Time Channel Strategy
 
-| Channel | Type | Carries |
-|---|---|---|
-| `room.{room_id}` | Private | Phase changes, eliminations, game events |
-| `narrator.{room_id}` | Private | Live action feed, full player info |
+| Channel              | Type    | Carries                                             |
+| -------------------- | ------- | --------------------------------------------------- |
+| `room.{room_id}`     | Private | Phase changes, eliminations, game events            |
+| `narrator.{room_id}` | Private | Live action feed, full player info                  |
 | `player.{player_id}` | Private | Role card, night action result, seer inspect result |
 
 **Rules:**
+
 - All channels are private (authenticated)
 - Roles are **never** sent on `room.{room_id}` — only on `player.{player_id}`
 - Narrator channel has full visibility; player channels are scoped to the individual
@@ -401,20 +404,21 @@ Actions are collected during Night phase and resolved **as a batch at dawn** by 
 
 Strictly follow this priority order:
 
-| Priority | Role | Action |
-|---|---|---|
-| 1 | Werewolves | kill |
-| 2 | Big Bad Wolf | extra kill (only if no werewolf has died yet) |
-| 3 | Accursed Wolf-Father | convert instead of kill (once per game) |
-| 4 | White Werewolf | kill a werewolf (every other night only) |
-| 5 | Bodyguard | protect target |
-| 6 | Seer | inspect (result only — no effect on target) |
-| 7 | Witch | save potion (cancels werewolf kill) / poison potion (adds a kill) |
-| 8 | Pied Piper | enchant |
-| 9 | Fox | inspect 3 adjacent players |
-| 10 | Cupid | link lovers (night 1 only) |
+| Priority | Role                 | Action                                                            |
+| -------- | -------------------- | ----------------------------------------------------------------- |
+| 1        | Werewolves           | kill                                                              |
+| 2        | Big Bad Wolf         | extra kill (only if no werewolf has died yet)                     |
+| 3        | Accursed Wolf-Father | convert instead of kill (once per game)                           |
+| 4        | White Werewolf       | kill a werewolf (every other night only)                          |
+| 5        | Bodyguard            | protect target                                                    |
+| 6        | Seer                 | inspect (result only — no effect on target)                       |
+| 7        | Witch                | save potion (cancels werewolf kill) / poison potion (adds a kill) |
+| 8        | Pied Piper           | enchant                                                           |
+| 9        | Fox                  | inspect 3 adjacent players                                        |
+| 10       | Cupid                | link lovers (night 1 only)                                        |
 
 **Resolution rules:**
+
 - Bodyguard protection is applied before kills are committed
 - Witch save cancels the werewolf kill on the **same** target only
 - Witch poison is an independent kill — **not** cancellable by Bodyguard
@@ -425,12 +429,12 @@ Strictly follow this priority order:
 
 ## 8. Lovers Logic
 
-| Scenario | Outcome |
-|---|---|
-| Both lovers same faction, both alive when faction wins | Faction wins — no Lovers override |
-| Lovers are cross-faction (e.g. villager + werewolf) | Werewolf faction wins if werewolves reach win condition |
-| One lover dies (any cause) | Partner dies immediately — death chain resolves fully |
-| Dying lover is Hunter | Hunter ability still fires before partner death |
+| Scenario                                               | Outcome                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------- |
+| Both lovers same faction, both alive when faction wins | Faction wins — no Lovers override                       |
+| Lovers are cross-faction (e.g. villager + werewolf)    | Werewolf faction wins if werewolves reach win condition |
+| One lover dies (any cause)                             | Partner dies immediately — death chain resolves fully   |
+| Dying lover is Hunter                                  | Hunter ability still fires before partner death         |
 
 ---
 
@@ -443,13 +447,13 @@ App Narrator Mode is **deferred** — do not implement it.
 - The narrator is **not a player** and does not receive a role card
 - The room creator selects Human Narrator mode and becomes narrator
 - Narrator capabilities:
-  - Waits for players to join via QR code or room code
-  - Configures role counts per role before starting
-  - Starts the game when ready
-  - Sees full dashboard: all roles, alive/dead status, live action feed
-  - Controls all phase transitions manually
-  - **Cannot** override or cancel a submitted player action
-  - **Never** reveals roles publicly (narrator eyes only)
+    - Waits for players to join via QR code or room code
+    - Configures role counts per role before starting
+    - Starts the game when ready
+    - Sees full dashboard: all roles, alive/dead status, live action feed
+    - Controls all phase transitions manually
+    - **Cannot** override or cancel a submitted player action
+    - **Never** reveals roles publicly (narrator eyes only)
 
 ### Narrator Dashboard Components to Build
 
@@ -464,10 +468,10 @@ App Narrator Mode is **deferred** — do not implement it.
 
 ### Mask / Unmask Mechanic
 
-| Rule | Detail |
-|---|---|
-| Gesture | Hold to reveal, release to hide |
-| Masked default | Black card face — always the default state |
+| Rule              | Detail                                                                  |
+| ----------------- | ----------------------------------------------------------------------- |
+| Gesture           | Hold to reveal, release to hide                                         |
+| Masked default    | Black card face — always the default state                              |
 | Maskable elements | Role card, submitted night action, received results (seer result, etc.) |
 
 The player must be able to show their screen to others without leaking sensitive information.
@@ -537,12 +541,14 @@ If a feature is not in the ✅ list, do not implement it. Do not add placeholder
 Follow this sequence. Do not skip ahead. Each phase must be stable before moving to the next.
 
 ### Phase 1 — Foundation
+
 - [ ] Laravel project setup with Reverb, Livewire, TailwindCSS
 - [ ] Database migrations for all 7 tables
 - [ ] Role seeder (all 25+ roles with correct `night_order`, `faction`, `abilities`)
 - [ ] `Room`, `Player`, `Role`, `GameState`, `NightAction`, `Vote`, `CoupleBond` models with relationships
 
 ### Phase 2 — Lobby
+
 - [ ] `LobbyService` — create room, join room, session token auth
 - [ ] `LobbyController` + `CreateRoom` / `JoinRoom` Livewire components
 - [ ] QR code generation for room URL
@@ -550,17 +556,20 @@ Follow this sequence. Do not skip ahead. Each phase must be stable before moving
 - [ ] Narrator role assignment (host becomes narrator, no role card)
 
 ### Phase 3 — Role Assignment
+
 - [ ] `RoleAssignmentService` — shuffle and assign roles based on narrator config
 - [ ] All 25+ Role classes implementing `RoleInterface`
 - [ ] `RoleCard` Livewire component with mask/unmask hold gesture
 
 ### Phase 4 — Game Engine Core
+
 - [ ] `PhaseManager` with all phase transitions and validation
 - [ ] `GameEngine` orchestrating game lifecycle
 - [ ] `WinConditionChecker` + all 6 `FactionInterface` implementations
 - [ ] All Phase classes (`WaitingPhase`, `NightPhase`, `DayPhase`, `VotingPhase`, `FinishedPhase`)
 
 ### Phase 5 — Night Actions
+
 - [ ] `ActionInterface`, `BaseAction`, `NightAction` classes
 - [ ] `ActionService` — submit, validate, store night actions
 - [ ] `ActionResolver` — deferred batch resolution (Section 7 order)
@@ -569,18 +578,21 @@ Follow this sequence. Do not skip ahead. Each phase must be stable before moving
 - [ ] All Events: `NightActionSubmitted`, `NightResolved`, `PlayerEliminated`, `LoverDied`
 
 ### Phase 6 — Voting
+
 - [ ] `VotingService` — submit vote, tally, resolve tie, eliminate player
 - [ ] `VoteController` + `VotingPanel` Livewire component
 - [ ] `WinConditionChecker` call after every vote resolution
 - [ ] `VoteSubmitted` and `PlayerEliminated` events
 
 ### Phase 7 — Narrator Dashboard
+
 - [ ] `NarratorDashboard` Livewire component (full player list + roles + alive/dead)
 - [ ] Live night action feed (via `narrator.{room_id}` Reverb channel)
 - [ ] `PhaseControls` Livewire component (all phase control buttons)
 - [ ] Game log with round counter
 
 ### Phase 8 — Localisation & Polish
+
 - [ ] All lang files in `fr/` and `en/` (game.php, roles.php, narration.php, ui.php)
 - [ ] Atmospheric dark UI (cinematic transitions, medieval aesthetic)
 - [ ] Readability pass (dark room contrast, touch target sizes)
@@ -604,6 +616,7 @@ Follow this sequence. Do not skip ahead. Each phase must be stable before moving
 ## 15. When You Are Unsure
 
 If a requirement is ambiguous:
+
 1. Default to the **simplest correct implementation**
 2. Add a `// NOTE:` comment explaining what was ambiguous and what you chose
 3. Do **not** invent features — stay within spec
@@ -639,31 +652,31 @@ $room = Room::find($request->route('room_id'));
 
 ### 16.2 What a Player Can Access
 
-| Resource | Allowed | Condition |
-|---|---|---|
-| Their own role card | ✅ | `player.room_id` matches the room |
-| Their own night action form | ✅ | Player is alive + correct phase |
-| Their own voting panel | ✅ | Player is alive + voting phase |
-| Their own submitted action result | ✅ | Result belongs to their `player_id` |
-| Another player's role card | ❌ | Never |
-| Another player's night action | ❌ | Never |
-| Another player's result | ❌ | Never |
-| A room they did not join | ❌ | Never |
-| The narrator dashboard | ❌ | Unless `player.is_narrator = true` |
-| Any game state from another room | ❌ | Never |
+| Resource                          | Allowed | Condition                           |
+| --------------------------------- | ------- | ----------------------------------- |
+| Their own role card               | ✅      | `player.room_id` matches the room   |
+| Their own night action form       | ✅      | Player is alive + correct phase     |
+| Their own voting panel            | ✅      | Player is alive + voting phase      |
+| Their own submitted action result | ✅      | Result belongs to their `player_id` |
+| Another player's role card        | ❌      | Never                               |
+| Another player's night action     | ❌      | Never                               |
+| Another player's result           | ❌      | Never                               |
+| A room they did not join          | ❌      | Never                               |
+| The narrator dashboard            | ❌      | Unless `player.is_narrator = true`  |
+| Any game state from another room  | ❌      | Never                               |
 
 ---
 
 ### 16.3 What a Narrator Can Access
 
-| Resource | Allowed | Condition |
-|---|---|---|
-| Narrator dashboard for their room | ✅ | `player.is_narrator = true` AND `player.room_id` matches |
-| Full player list with roles | ✅ | Same room only |
-| Live night action feed | ✅ | Same room only |
-| Phase controls | ✅ | Same room only |
-| Narrator dashboard for another room | ❌ | Never |
-| Any player's private channel data | ❌ | Narrator sees aggregate feed, not raw channel data |
+| Resource                            | Allowed | Condition                                                |
+| ----------------------------------- | ------- | -------------------------------------------------------- |
+| Narrator dashboard for their room   | ✅      | `player.is_narrator = true` AND `player.room_id` matches |
+| Full player list with roles         | ✅      | Same room only                                           |
+| Live night action feed              | ✅      | Same room only                                           |
+| Phase controls                      | ✅      | Same room only                                           |
+| Narrator dashboard for another room | ❌      | Never                                                    |
+| Any player's private channel data   | ❌      | Narrator sees aggregate feed, not raw channel data       |
 
 ---
 
@@ -802,12 +815,12 @@ if (! $player || $player->room_id !== $targetRoomId) {
 
 A dead player (`is_alive = false`) has restricted access:
 
-| Resource | Allowed |
-|---|---|
-| View the game (spectator read-only view) | ✅ |
-| Submit a night action | ❌ |
-| Cast a vote | ❌ |
-| Interact with any game mechanic | ❌ |
+| Resource                                 | Allowed |
+| ---------------------------------------- | ------- |
+| View the game (spectator read-only view) | ✅      |
+| Submit a night action                    | ❌      |
+| Cast a vote                              | ❌      |
+| Interact with any game mechanic          | ❌      |
 
 Dead players attempting to submit actions or votes must be silently ignored server-side (no error, no broadcast). Do not rely on UI hiding alone — always enforce on the server.
 
@@ -826,4 +839,4 @@ Before any PR touching player data, channels, or game actions is considered comp
 
 ---
 
-*End of AGENTS.md*
+_End of AGENTS.md_
