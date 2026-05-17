@@ -1,11 +1,25 @@
 <?php
 
+use App\Http\Controllers\LobbyController;
+use App\Http\Livewire\CreateRoom;
+use App\Http\Livewire\JoinRoom;
+use App\Http\Livewire\NarratorDashboard;
+use App\Http\Livewire\NarratorLobby;
+use App\Http\Livewire\PlayerGameView;
+use App\Http\Livewire\PlayerLobby;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+Route::middleware('player')->group(function () {
+    Route::get('/room/{room}/narrator', NarratorLobby::class)->name('lobby.narrator');
+    Route::get('/room/{room}/player', PlayerLobby::class)->name('lobby.player');
+    Route::get('/game/{room}/narrator', NarratorDashboard::class)->name('game.narrator');
+    Route::get('/game/{room}/player', PlayerGameView::class)->name('game.player');
 });
 
-require __DIR__.'/settings.php';
+Route::get('/create', CreateRoom::class)->name('rooms.create');
+Route::get('/join/{code?}', JoinRoom::class)->name('rooms.join');
+
+Route::post('/api/rooms', [LobbyController::class, 'create'])->name('api.rooms.create');
+Route::post('/api/rooms/join', [LobbyController::class, 'join'])->name('api.rooms.join');

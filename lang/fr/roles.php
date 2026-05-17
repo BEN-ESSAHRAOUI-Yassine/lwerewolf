@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'villager' => ['name' => 'Villageois', 'description' => 'Aucune capacité spéciale.'],
+    'seer' => ['name' => 'Voyante', 'description' => 'Chaque nuit, vous pouvez inspecter un joueur pour connaître sa faction.'],
+    'witch' => ['name' => 'Sorcière', 'description' => 'Vous possédez une potion de guérison et une potion de poison, chacune utilisable une fois.'],
+    'hunter' => ['name' => 'Chasseur', 'description' => 'Lorsque vous êtes éliminé, vous pouvez immédiatement éliminer un joueur de votre choix.'],
+    'bodyguard' => ['name' => 'Garde du corps', 'description' => 'Chaque nuit, vous pouvez protéger un joueur de l\'attaque des loups-garous.'],
+    'little_girl' => ['name' => 'Petite Fille', 'description' => 'Vous pouvez discrètement observer les loups-garous pendant la nuit.'],
+    'cupid' => ['name' => 'Cupidon', 'description' => 'La première nuit, choisissez deux joueurs qui deviendront amoureux.'],
+    'elder' => ['name' => 'Ancien', 'description' => 'Vous survivez à la première attaque des loups-garous. Si vous êtes exclu par vote, les capacités du village sont perdues.'],
+    'scapegoat' => ['name' => 'Bouc émissaire', 'description' => 'Si un vote aboutit à une égalité, vous êtes éliminé à la place et rendez un dernier décret.'],
+    'village_idiot' => ['name' => 'Idiot du village', 'description' => 'Lorsque vous êtes exclu par vote, vous survivez mais perdez définitivement votre droit de vote.'],
+    'two_sisters' => ['name' => 'Les Deux Sœurs', 'description' => 'Vous connaissez l\'identité de votre sœur depuis le début.'],
+    'three_brothers' => ['name' => 'Les Trois Frères', 'description' => 'Vous connaissez l\'identité de vos frères depuis le début.'],
+    'stuttering_judge' => ['name' => 'Juge Bègue', 'description' => 'Une fois par partie, vous pouvez secrètement déclencher un second vote.'],
+    'knight_with_rusty_sword' => ['name' => 'Chevalier à l\'épée rouillée', 'description' => 'Le premier loup-garou qui vous tue est infecté et meurt la nuit suivante.'],
+    'devoted_servant' => ['name' => 'Serviteur Dévoué', 'description' => 'Lorsqu\'un joueur est exclu par vote, vous pouvez secrètement échanger vos identités.'],
+    'bear_tamer' => ['name' => 'Montreur d\'ours', 'description' => 'Chaque matin, si un loup-garou est assis à côté de vous, votre ours grogne.'],
+    'fox' => ['name' => 'Renard', 'description' => 'Chaque nuit, reniflez 3 joueurs adjacents. Si aucun n\'est loup-garou, vous perdez votre capacité.'],
+    'pied_piper' => ['name' => 'Joueur de flûte', 'description' => 'Chaque nuit, ensorcelez 2 joueurs. Vous gagnez si tous les joueurs vivants sont ensorcelés.'],
+    'werewolf' => ['name' => 'Loup-Garou', 'description' => 'Chaque nuit, les loups-garous choisissent collectivement une victime à éliminer.'],
+    'big_bad_wolf' => ['name' => 'Grand Méchant Loup', 'description' => 'Vous pouvez éliminer un joueur supplémentaire chaque nuit tant qu\'aucun loup-garou n\'est mort.'],
+    'accursed_wolf_father' => ['name' => 'Père des Loups Maudit', 'description' => 'Une fois par partie, convertissez un joueur en loup-garou au lieu de le tuer.'],
+    'white_werewolf' => ['name' => 'Loup-Garou Blanc', 'description' => 'Un soir sur deux, vous pouvez éliminer un loup-garou. Vous gagnez si vous êtes le dernier survivant.'],
+    'wolf_hound' => ['name' => 'Chien-Loup', 'description' => 'La première nuit, choisissez secrètement d\'être villageois ou loup-garou.'],
+    'angel' => ['name' => 'Ange', 'description' => 'Si vous êtes éliminé par le vote du village au tour 1, vous gagnez immédiatement.'],
+];

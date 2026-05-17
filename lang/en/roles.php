@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'villager' => ['name' => 'Villager', 'description' => 'No special ability.'],
+    'seer' => ['name' => 'Seer', 'description' => 'Each night, you may inspect one player to learn their faction.'],
+    'witch' => ['name' => 'Witch', 'description' => 'You possess a save potion and a poison potion, each usable once.'],
+    'hunter' => ['name' => 'Hunter', 'description' => 'When eliminated, you may immediately eliminate one player of your choice.'],
+    'bodyguard' => ['name' => 'Bodyguard', 'description' => 'Each night, you may protect one player from the werewolf attack.'],
+    'little_girl' => ['name' => 'Little Girl', 'description' => 'You may discreetly observe the werewolves during the night.'],
+    'cupid' => ['name' => 'Cupid', 'description' => 'On the first night, choose two players to become lovers.'],
+    'elder' => ['name' => 'Elder', 'description' => 'You survive the first werewolf attack. If voted out, village abilities are lost.'],
+    'scapegoat' => ['name' => 'Scapegoat', 'description' => 'If a vote ends in a tie, you are eliminated instead and issue a last decree.'],
+    'village_idiot' => ['name' => 'Village Idiot', 'description' => 'When voted out, you survive but lose voting rights permanently.'],
+    'two_sisters' => ['name' => 'Two Sisters', 'description' => 'You know your sister\'s identity from the start.'],
+    'three_brothers' => ['name' => 'Three Brothers', 'description' => 'You know your brothers\' identities from the start.'],
+    'stuttering_judge' => ['name' => 'Stuttering Judge', 'description' => 'Once per game, you may secretly trigger a second vote.'],
+    'knight_with_rusty_sword' => ['name' => 'Knight with Rusty Sword', 'description' => 'The first werewolf to kill you is infected and dies the following night.'],
+    'devoted_servant' => ['name' => 'Devoted Servant', 'description' => 'When a player is voted out, you may secretly swap identities with them.'],
+    'bear_tamer' => ['name' => 'Bear Tamer', 'description' => 'Each morning, if a werewolf sits next to you, your bear growls.'],
+    'fox' => ['name' => 'Fox', 'description' => 'Each night, sniff 3 adjacent players. If none are werewolves, you lose your ability.'],
+    'pied_piper' => ['name' => 'Pied Piper', 'description' => 'Each night, enchant 2 players. You win if all living players are enchanted.'],
+    'werewolf' => ['name' => 'Werewolf', 'description' => 'Each night, the werewolves collectively choose a victim to eliminate.'],
+    'big_bad_wolf' => ['name' => 'Big Bad Wolf', 'description' => 'You may eliminate an extra player each night while no werewolf has died.'],
+    'accursed_wolf_father' => ['name' => 'Accursed Wolf-Father', 'description' => 'Once per game, convert a player into a werewolf instead of killing.'],
+    'white_werewolf' => ['name' => 'White Werewolf', 'description' => 'Every other night, you may eliminate a werewolf. You win if you are the last survivor.'],
+    'wolf_hound' => ['name' => 'Wolf Hound', 'description' => 'On the first night, secretly choose to be a villager or a werewolf.'],
+    'angel' => ['name' => 'Angel', 'description' => 'If eliminated by village vote on round 1, you win immediately.'],
+];
