@@ -50,7 +50,14 @@ class NarratorDashboard extends Component
         }
 
         try {
-            app(GameEngine::class)->advancePhase($this->state, $toPhase);
+            $engine = app(GameEngine::class);
+
+            if ($this->state->phase === 'night' && $toPhase === 'day') {
+                $engine->resolveNight($this->state);
+            } else {
+                $engine->advancePhase($this->state, $toPhase);
+            }
+
             $this->state = $this->state->fresh();
         } catch (\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());

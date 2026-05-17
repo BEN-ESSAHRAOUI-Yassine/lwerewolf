@@ -17,6 +17,7 @@ class GameEngine
         private PhaseManager $phaseManager,
         private RoleAssignmentService $roleAssignment,
         private WinConditionChecker $winChecker,
+        private ActionResolver $actionResolver,
     ) {}
 
     public function startGame(Room $room): GameState
@@ -33,6 +34,18 @@ class GameEngine
     public function advancePhase(GameState $state, string $toPhase): void
     {
         $this->phaseManager->transition($state, $toPhase);
+    }
+
+    public function resolveNight(GameState $state): void
+    {
+        $this->actionResolver->resolve($state);
+
+        $winner = $this->winChecker->check($state);
+        if ($winner) {
+            $this->endGame($state, $winner);
+        } else {
+            $this->phaseManager->transition($state, 'day');
+        }
     }
 
     public function eliminatePlayer(Player $player, GameState $state): ?\App\Game\Factions\FactionInterface
