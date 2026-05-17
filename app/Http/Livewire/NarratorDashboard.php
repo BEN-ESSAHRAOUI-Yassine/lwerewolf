@@ -4,10 +4,10 @@ namespace App\Http\Livewire;
 
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
-use App\Game\Factions\FactionInterface;
 use App\Models\GameState;
 use App\Models\Player;
 use App\Models\Room;
+use App\Models\Vote;
 use Livewire\Component;
 
 // DO NOT write game_states.phase directly — use PhaseManager::transition()
@@ -54,6 +54,8 @@ class NarratorDashboard extends Component
 
             if ($this->state->phase === 'night' && $toPhase === 'day') {
                 $engine->resolveNight($this->state);
+            } elseif ($this->state->phase === 'voting' && $toPhase === 'night') {
+                $engine->resolveVote($this->state);
             } else {
                 $engine->advancePhase($this->state, $toPhase);
             }
@@ -69,6 +71,7 @@ class NarratorDashboard extends Component
         return [
             "echo-private:room.{$this->room->id},PhaseChanged" => '$refresh',
             "echo-private:room.{$this->room->id},PlayerEliminated" => '$refresh',
+            "echo-private:narrator.{$this->room->id},VoteSubmitted" => '$refresh',
         ];
     }
 
@@ -83,9 +86,26 @@ class NarratorDashboard extends Component
         $phase = $this->state->phase;
         $availableTransitions = $this->getTransitions($phase);
 
+        $voteTally = [];
+        $voteCount = 0;
+        if ($phase === 'voting') {
+            $votes = Vote::where('game_state_id', $this->state->id)->get();
+            $voteCount = $votes->count();
+            foreach ($votes as $v) {
+                $voteTally[$v->target_id] = ($voteTally[$v->target_id] ?? 0) + 1;
+            }
+            arsort($voteTally);
+            $eligibleCount = $players->where('is_alive', true)->where('voting_banned', false)->count();
+        }
+
+        $totalAlive = $players->where('is_alive', true)->count();
+
         return view('livewire.narrator-dashboard', [
             'players' => $players,
             'availableTransitions' => $availableTransitions,
+            'voteTally' => $voteTally,
+            'voteCount' => $voteCount,
+            'totalAlive' => $totalAlive,
         ])->layout('layouts.app');
     }
 

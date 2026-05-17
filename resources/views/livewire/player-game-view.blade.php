@@ -24,13 +24,11 @@
             <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
                 <p class="text-[#9A8A6A] italic">{{ __('ui.game.decoy_prompt') }}</p>
             </div>
+        @elseif($state->phase === 'voting' && !$player->is_narrator)
+            <livewire:voting-panel :room="$room" :player="$player" :wire:key="'voting-'.$player->id" />
         @elseif($state->phase === 'day')
             <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
                 <p class="text-[#9A8A6A]">{{ __('ui.game.discussion_time') }}</p>
-            </div>
-        @elseif($state->phase === 'voting' && !$player->voting_banned)
-            <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
-                <p class="text-[#9A8A6A]">{{ __('ui.vote.title') }}</p>
             </div>
         @elseif($state->phase === 'finished')
             <div class="bg-[#1A1510] border border-[#C8922A] rounded-xl p-6 text-center">

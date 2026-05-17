@@ -36,6 +36,29 @@ class GameEngine
         $this->phaseManager->transition($state, $toPhase);
     }
 
+    public function resolveVote(GameState $state): ?\App\Game\Factions\FactionInterface
+    {
+        $service = app(\App\Game\Services\VotingService::class);
+        $winner = $service->resolve($state);
+
+        if ($winner) {
+            $this->endGame($state, $winner);
+        } else {
+            $data = $state->data ?? [];
+            $secondVote = $data['second_vote_triggered'] ?? false;
+            if ($secondVote) {
+                $data['second_vote_triggered'] = false;
+                $state->data = $data;
+                $state->save();
+                $this->phaseManager->transition($state, 'day');
+            } else {
+                $this->phaseManager->transition($state, 'night');
+            }
+        }
+
+        return $winner;
+    }
+
     public function resolveNight(GameState $state): void
     {
         $this->actionResolver->resolve($state);

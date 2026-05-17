@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LobbyController;
+use App\Http\Controllers\VoteController;
 use App\Http\Livewire\CreateRoom;
 use App\Http\Livewire\JoinRoom;
 use App\Http\Livewire\NarratorDashboard;
@@ -23,3 +24,4 @@ Route::get('/join/{code?}', JoinRoom::class)->name('rooms.join');
 
 Route::post('/api/rooms', [LobbyController::class, 'create'])->name('api.rooms.create');
 Route::post('/api/rooms/join', [LobbyController::class, 'join'])->name('api.rooms.join');
+Route::post('/api/vote', [VoteController::class, 'submit'])->name('api.vote.submit')->middleware('player');
