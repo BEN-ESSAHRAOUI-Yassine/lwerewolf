@@ -92,6 +92,11 @@ class GameEngine
     public function endGame(GameState $state, \App\Game\Factions\FactionInterface $winner): void
     {
         DB::transaction(function () use ($state, $winner) {
+            $data = $state->data;
+            $data['winning_faction'] = $winner->getKey();
+            $state->data = $data;
+            $state->save();
+
             $this->phaseManager->transition($state, 'finished');
 
             $winners = $winner->getWinners($state);

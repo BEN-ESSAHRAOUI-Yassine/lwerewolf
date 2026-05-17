@@ -47,8 +47,18 @@ class PlayerGameView extends Component
     {
         $state = $this->room->gameState;
 
+        $players = collect();
+        if ($state && $state->phase === 'finished') {
+            $players = Player::where('room_id', $this->room->id)
+                ->where('is_narrator', false)
+                ->with('role')
+                ->orderBy('created_at')
+                ->get();
+        }
+
         return view('livewire.player-game-view', [
             'state' => $state,
+            'players' => $players,
         ])->layout('layouts.app');
     }
 }

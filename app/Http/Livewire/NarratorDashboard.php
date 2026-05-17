@@ -4,7 +4,9 @@ namespace App\Http\Livewire;
 
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
+use App\Models\CoupleBond;
 use App\Models\GameState;
+use App\Models\NightAction;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\Vote;
@@ -16,7 +18,9 @@ class NarratorDashboard extends Component
     public Room $room;
     public GameState $state;
     public Player $player;
-    public ?string $winnerFaction = null;
+    public array $gameLog = [];
+    public array $nightActionFeed = [];
+    public array $pendingRoles = [];
 
     public function mount(Room $room)
     {
@@ -38,6 +42,8 @@ class NarratorDashboard extends Component
         $this->room = $room;
         $this->player = $requestPlayer;
         $this->state = $room->gameState;
+        $this->initGameLog();
+        $this->refreshNightFeed();
     }
 
     public function advancePhase(string $toPhase)
@@ -54,25 +60,175 @@ class NarratorDashboard extends Component
 
             if ($this->state->phase === 'night' && $toPhase === 'day') {
                 $engine->resolveNight($this->state);
+                $this->addLogEntry('night_resolved', []);
             } elseif ($this->state->phase === 'voting' && $toPhase === 'night') {
                 $engine->resolveVote($this->state);
+                $this->addLogEntry('voting_resolved', []);
             } else {
                 $engine->advancePhase($this->state, $toPhase);
             }
 
             $this->state = $this->state->fresh();
+            $this->addLogEntry('phase_changed', ['from' => $this->state->phase, 'to' => $toPhase]);
+            $this->refreshNightFeed();
         } catch (\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
         }
     }
 
+    public function newGame()
+    {
+        $requestPlayer = request()->get('_player');
+        if (!$requestPlayer || !$requestPlayer->is_narrator || $requestPlayer->room_id !== $this->room->id) {
+            event(new SuspiciousAccessAttempt($requestPlayer ?? $this->player, 'Non-narrator attempted new game'));
+            $this->redirect(route('home'));
+            return;
+        }
+
+        $room = $this->room;
+
+        $room->status = 'waiting';
+        $room->save();
+
+        Player::where('room_id', $room->id)->update([
+            'role_id' => null,
+            'is_alive' => true,
+            'voting_banned' => false,
+        ]);
+
+        if ($room->gameState) {
+            GameState::where('room_id', $room->id)->delete();
+            NightAction::whereIn('game_state_id', function ($q) use ($room) {
+                $q->select('id')->from('game_states')->where('room_id', $room->id);
+            })->delete();
+            Vote::whereIn('game_state_id', function ($q) use ($room) {
+                $q->select('id')->from('game_states')->where('room_id', $room->id);
+            })->delete();
+            CoupleBond::whereIn('game_state_id', function ($q) use ($room) {
+                $q->select('id')->from('game_states')->where('room_id', $room->id);
+            })->delete();
+        }
+
+        $this->redirect(route('lobby.narrator', $room));
+    }
+
+    private function initGameLog()
+    {
+        $this->gameLog = [];
+        $this->addLogEntry('game_started', ['round' => $this->state->round]);
+    }
+
+    private function addLogEntry(string $type, array $data)
+    {
+        $this->gameLog[] = array_merge([
+            'type' => $type,
+            'round' => $this->state->round ?? 1,
+            'phase' => $this->state->phase ?? 'waiting',
+            'timestamp' => now()->toIso8601String(),
+        ], $data);
+
+        if (count($this->gameLog) > 200) {
+            array_shift($this->gameLog);
+        }
+    }
+
+    private function refreshNightFeed()
+    {
+        if ($this->state->phase !== 'night') {
+            $this->nightActionFeed = [];
+            $this->pendingRoles = [];
+            return;
+        }
+
+        $actions = NightAction::where('game_state_id', $this->state->id)
+            ->whereNull('resolved_at')
+            ->with(['player.role', 'target'])
+            ->orderBy('created_at')
+            ->get();
+
+        $this->nightActionFeed = $actions->map(function ($a) {
+            return [
+                'id' => $a->id,
+                'role_key' => $a->player->role?->key,
+                'action_type' => $a->action_type,
+                'target_nickname' => $a->target?->nickname,
+                'player_nickname' => $a->player->nickname,
+                'timestamp' => $a->created_at->toIso8601String(),
+            ];
+        })->toArray();
+
+        $rolesWithActions = [
+            'cupid', 'wolf_hound', 'werewolf', 'big_bad_wolf', 'accursed_wolf_father',
+            'white_werewolf', 'bodyguard', 'seer', 'witch', 'pied_piper', 'fox',
+        ];
+
+        $submittedPlayerIds = $actions->pluck('player_id')->toArray();
+        $allAlive = Player::where('room_id', $this->room->id)
+            ->where('is_alive', true)
+            ->where('is_narrator', false)
+            ->with('role')
+            ->get();
+
+        $pending = [];
+        foreach ($allAlive as $p) {
+            if ($p->role && in_array($p->role->key, $rolesWithActions)) {
+                if (!in_array($p->id, $submittedPlayerIds)) {
+                    $pending[] = $p->role->key;
+                }
+            }
+        }
+        $this->pendingRoles = array_unique($pending);
+    }
+
     public function getListeners()
     {
         return [
-            "echo-private:room.{$this->room->id},PhaseChanged" => '$refresh',
-            "echo-private:room.{$this->room->id},PlayerEliminated" => '$refresh',
-            "echo-private:narrator.{$this->room->id},VoteSubmitted" => '$refresh',
+            "echo-private:room.{$this->room->id},PhaseChanged" => 'onPhaseChanged',
+            "echo-private:room.{$this->room->id},PlayerEliminated" => 'onPlayerEliminated',
+            "echo-private:narrator.{$this->room->id},NightActionSubmitted" => 'onNightActionSubmitted',
+            "echo-private:narrator.{$this->room->id},VoteSubmitted" => 'onVoteSubmitted',
+            "echo-private:narrator.{$this->room->id},SuspiciousAccessAttempt" => 'onSuspiciousAccess',
+            "echo-private:room.{$this->room->id},GameFinished" => 'onGameFinished',
         ];
+    }
+
+    public function onPhaseChanged()
+    {
+        $this->state = $this->state->fresh();
+        $this->refreshNightFeed();
+    }
+
+    public function onPlayerEliminated($payload)
+    {
+        $this->addLogEntry('player_eliminated', [
+            'nickname' => $payload['nickname'] ?? 'unknown',
+        ]);
+    }
+
+    public function onNightActionSubmitted()
+    {
+        $this->refreshNightFeed();
+    }
+
+    public function onVoteSubmitted()
+    {
+        $this->addLogEntry('vote_submitted', []);
+    }
+
+    public function onSuspiciousAccess($payload)
+    {
+        $this->addLogEntry('suspicious_access', [
+            'player_nickname' => $payload['player']['nickname'] ?? 'unknown',
+            'details' => $payload['details'] ?? '',
+        ]);
+    }
+
+    public function onGameFinished($payload)
+    {
+        $this->state = $this->state->fresh();
+        $this->addLogEntry('game_finished', [
+            'winning_faction' => $payload['winning_faction'] ?? 'unknown',
+        ]);
     }
 
     public function render()
@@ -95,10 +251,24 @@ class NarratorDashboard extends Component
                 $voteTally[$v->target_id] = ($voteTally[$v->target_id] ?? 0) + 1;
             }
             arsort($voteTally);
-            $eligibleCount = $players->where('is_alive', true)->where('voting_banned', false)->count();
         }
 
         $totalAlive = $players->where('is_alive', true)->count();
+
+        $coupleBonds = CoupleBond::where('game_state_id', $this->state->id)->get();
+        $loverMap = [];
+        foreach ($coupleBonds as $bond) {
+            $loverMap[$bond->player_id] = $bond->partner_id;
+            $loverMap[$bond->partner_id] = $bond->player_id;
+        }
+
+        $enchantedIds = $this->state->data['enchanted_player_ids'] ?? [];
+
+        $nightOrder = [
+            'cupid', 'wolf_hound', 'werewolf', 'big_bad_wolf',
+            'accursed_wolf_father', 'white_werewolf', 'bodyguard',
+            'little_girl', 'seer', 'witch', 'pied_piper', 'fox', 'bear_tamer',
+        ];
 
         return view('livewire.narrator-dashboard', [
             'players' => $players,
@@ -106,6 +276,10 @@ class NarratorDashboard extends Component
             'voteTally' => $voteTally,
             'voteCount' => $voteCount,
             'totalAlive' => $totalAlive,
+            'loverMap' => $loverMap,
+            'enchantedIds' => $enchantedIds,
+            'nightOrder' => $nightOrder,
+            'state' => $this->state,
         ])->layout('layouts.app');
     }
 
@@ -115,6 +289,7 @@ class NarratorDashboard extends Component
             'night' => ['day', 'finished'],
             'day' => ['voting'],
             'voting' => ['night', 'finished'],
+            'finished' => [],
             default => [],
         };
     }

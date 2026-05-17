@@ -24,6 +24,7 @@ class NightActionSubmitted implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
+            'action_id' => $this->action->id,
             'player_id' => $this->action->player_id,
             'action_type' => $this->action->action_type,
             'target_id' => $this->action->target_id,
