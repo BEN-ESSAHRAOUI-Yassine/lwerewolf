@@ -24,6 +24,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        $locale = session('locale');
+        if ($locale && in_array($locale, ['en', 'fr'])) {
+            app()->setLocale($locale);
+        }
     }
 
     /**

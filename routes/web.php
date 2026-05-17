@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 
+Route::get('/locale/{locale}', function (string $locale) {
+    if (in_array($locale, ['en', 'fr'])) {
+        session(['locale' => $locale]);
+        app()->setLocale($locale);
+    }
+    return redirect(route('home'));
+})->name('locale.switch');
+
 Route::middleware('player')->group(function () {
     Route::get('/room/{room}/narrator', NarratorLobby::class)->name('lobby.narrator');
     Route::get('/room/{room}/player', PlayerLobby::class)->name('lobby.player');

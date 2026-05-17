@@ -1,4 +1,26 @@
-<div class="min-h-screen flex flex-col items-center justify-center p-8">
+<div class="min-h-screen flex flex-col items-center justify-center p-8"
+     x-data="{ showOverlay: false, phaseLabel: '', phaseClass: '' }"
+     @transition-phase.window="
+         showOverlay = true;
+         phaseLabel = $event.detail.label;
+         phaseClass = $event.detail.class;
+         setTimeout(() => { showOverlay = false; }, 1500);
+     "
+>
+    {{-- Phase transition overlay --}}
+    <div x-show="showOverlay"
+         class="fixed inset-0 z-50 flex items-center justify-center"
+         :class="phaseClass"
+         x-transition:enter="transition-all duration-700"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-all duration-500"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         x-cloak>
+        <h2 class="text-4xl font-serif font-bold text-[#E8D9B5]" x-text="phaseLabel"></h2>
+    </div>
+
     {{-- Phase indicator --}}
     <div class="mb-8 text-center">
         <p class="text-[#9A8A6A] text-sm uppercase tracking-widest">

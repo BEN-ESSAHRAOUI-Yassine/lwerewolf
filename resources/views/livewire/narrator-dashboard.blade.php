@@ -1,4 +1,26 @@
-<div class="min-h-screen p-6">
+<div class="min-h-screen p-6"
+     x-data="{ showOverlay: false, phaseLabel: '', phaseClass: '' }"
+     @transition-phase.window="
+         showOverlay = true;
+         phaseLabel = $event.detail.label;
+         phaseClass = $event.detail.class;
+         setTimeout(() => { showOverlay = false; }, 1500);
+     "
+>
+    {{-- Phase transition overlay --}}
+    <div x-show="showOverlay"
+         class="fixed inset-0 z-50 flex items-center justify-center"
+         :class="phaseClass"
+         x-transition:enter="transition-all duration-700"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-all duration-500"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         x-cloak>
+        <h2 class="text-4xl font-serif font-bold text-[#E8D9B5]" x-text="phaseLabel"></h2>
+    </div>
+
     <div class="max-w-7xl mx-auto">
         {{-- ===== HEADER ===== --}}
         <div class="flex items-center justify-between mb-6">
@@ -145,7 +167,7 @@
                                 <div class="px-2.5 py-1.5 bg-[#1A3A5C]/20 rounded text-xs border-l-2 border-[#3A6A9A]">
                                     <div class="flex items-center justify-between text-[#8AB8E8]">
                                         <span>{{ $action['role_key'] ? __("roles.{$action['role_key']}.name") : __('ui.game.unknown_role') }}</span>
-                                        <span class="text-[#6A9AB8] text-[10px]">{{ \Carbon\Carbon::parse($action['timestamp'])->format('H:i:s') }}</span>
+                                        <span class="text-[#6A9AB8] text-[10px]">{{ \Carbon\Carbon::parse($action['timestamp'])->isoFormat('HH:mm:ss') }}</span>
                                     </div>
                                     <p class="text-[#B8D8E8] mt-0.5">
                                         @if($action['action_type'] === 'inspect')
@@ -197,7 +219,7 @@
                                 {{ $entry['type'] === 'voting_resolved' ? 'text-[#E8A88A] bg-[#E8A88A]/5' : '' }}
                                 {{ $entry['type'] === 'suspicious_access' ? 'text-[#E8B5B5] bg-[#8B2020]/10' : '' }}
                                 {{ $entry['type'] === 'game_started' ? 'text-[#C8922A] bg-[#C8922A]/10' : '' }}">
-                                <span class="text-[#5C4A1A] mr-1.5">{{ \Carbon\Carbon::parse($entry['timestamp'])->format('H:i') }}</span>
+                                <span class="text-[#5C4A1A] mr-1.5">{{ \Carbon\Carbon::parse($entry['timestamp'])->isoFormat('HH:mm') }}</span>
                                 @if($entry['type'] === 'phase_changed')
                                     [{{ __('ui.phase.' . ($entry['from'] ?? 'unknown')) }} → {{ __('ui.phase.' . ($entry['to'] ?? 'unknown')) }}]
                                 @elseif($entry['type'] === 'player_eliminated')

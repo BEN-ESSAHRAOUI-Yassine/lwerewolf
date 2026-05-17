@@ -21,6 +21,14 @@ return [
         'connected_players' => 'Connected Players',
         'role_config' => 'Role Configuration',
         'assigned' => 'Assigned',
+        'create_room' => 'Create a Game',
+        'join_room' => 'Join a Game',
+        'your_nickname' => 'Your Nickname',
+        'nickname_placeholder' => 'Enter your nickname',
+        'no_players_yet' => 'No players have joined yet',
+        'you_joined_as' => 'You joined as',
+        'waiting_narrator' => 'Waiting for the narrator to start...',
+        'code_placeholder' => 'Room code',
     ],
     'phase' => [
         'night' => 'Night',
@@ -142,6 +150,9 @@ return [
         'angel' => 'The Angel wins!',
         'lovers' => 'The Lovers win!',
         'no_one' => 'No one wins...',
+    ],
+    'home' => [
+        'subtitle' => 'Les Loups-Garous de Thiercelieux — A companion app for the classic social deduction game.',
     ],
     'factions' => [
         'village' => 'Village',

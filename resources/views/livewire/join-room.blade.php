@@ -11,7 +11,7 @@
                     id="code"
                     maxlength="6"
                     class="w-full px-4 py-3 bg-[#1A1510] border border-[#251E16] text-[#E8D9B5] rounded-lg focus:outline-none focus:border-[#C8922A] transition-colors text-center text-2xl tracking-[0.5em] uppercase"
-                    placeholder="W4LF9X"
+                    placeholder="{{ __('ui.lobby.code_placeholder') }}"
                 >
                 @error('code') <p class="text-[#8B2020] text-sm mt-1">{{ $message }}</p> @enderror
             </div>

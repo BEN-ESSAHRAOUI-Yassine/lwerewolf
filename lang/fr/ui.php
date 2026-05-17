@@ -21,6 +21,14 @@ return [
         'connected_players' => 'Joueurs connectés',
         'role_config' => 'Configuration des rôles',
         'assigned' => 'Assigné',
+        'create_room' => 'Créer une partie',
+        'join_room' => 'Rejoindre une partie',
+        'your_nickname' => 'Votre surnom',
+        'nickname_placeholder' => 'Entrez votre surnom',
+        'no_players_yet' => 'Aucun joueur n\'a encore rejoint',
+        'you_joined_as' => 'Vous avez rejoint en tant que',
+        'waiting_narrator' => 'En attente que le narrateur commence...',
+        'code_placeholder' => 'Code de la partie',
     ],
     'phase' => [
         'night' => 'Nuit',
@@ -142,6 +150,9 @@ return [
         'angel' => 'L\'Ange gagne !',
         'lovers' => 'Les Amoureux gagnent !',
         'no_one' => 'Personne ne gagne...',
+    ],
+    'home' => [
+        'subtitle' => 'Les Loups-Garous de Thiercelieux — Une application compagnon pour le jeu de déduction sociale classique.',
     ],
     'factions' => [
         'village' => 'Village',

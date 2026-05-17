@@ -36,11 +36,31 @@ class PlayerGameView extends Component
 
     public function getListeners()
     {
+        $roomId = $this->room->id;
         return [
-            "echo-private:room.{$this->room->id},PhaseChanged" => '$refresh',
-            "echo-private:room.{$this->room->id},PlayerEliminated" => '$refresh',
+            "echo-private:room.{$roomId},PhaseChanged" => 'onPhaseChanged',
+            "echo-private:room.{$roomId},PlayerEliminated" => '$refresh',
             "echo-private:player.{$this->player->id},RoleAssigned" => '$refresh',
         ];
+    }
+
+    public function onPhaseChanged(array $payload)
+    {
+        $this->state = $this->room->gameState->fresh();
+        $phase = $this->state->phase;
+        $labels = [
+            'night' => __('ui.phase.night'),
+            'day' => __('ui.phase.day'),
+            'voting' => __('ui.phase.voting'),
+            'finished' => __('ui.phase.finished'),
+        ];
+        $classes = [
+            'night' => 'phase-overlay phase-overlay-night',
+            'day' => 'phase-overlay phase-overlay-day',
+            'voting' => 'phase-overlay phase-overlay-voting',
+            'finished' => 'phase-overlay phase-overlay-finished',
+        ];
+        $this->dispatch('transition-phase', label: $labels[$phase] ?? '', class: $classes[$phase] ?? '');
     }
 
     public function render()

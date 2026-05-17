@@ -196,6 +196,20 @@ class NarratorDashboard extends Component
     {
         $this->state = $this->state->fresh();
         $this->refreshNightFeed();
+        $phase = $this->state->phase;
+        $labels = [
+            'night' => __('ui.phase.night'),
+            'day' => __('ui.phase.day'),
+            'voting' => __('ui.phase.voting'),
+            'finished' => __('ui.phase.finished'),
+        ];
+        $classes = [
+            'night' => 'phase-overlay phase-overlay-night',
+            'day' => 'phase-overlay phase-overlay-day',
+            'voting' => 'phase-overlay phase-overlay-voting',
+            'finished' => 'phase-overlay phase-overlay-finished',
+        ];
+        $this->dispatch('transition-phase', label: $labels[$phase] ?? '', class: $classes[$phase] ?? '');
     }
 
     public function onPlayerEliminated($payload)

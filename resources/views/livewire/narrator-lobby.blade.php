@@ -17,8 +17,7 @@
             {{-- Player Count --}}
             <div class="mt-6 text-center">
                 <span class="text-[#E8D9B5] text-lg">{{ $playerCount }}</span>
-                <span class="text-[#9A8A6A]"> / 24 </span>
-                <span class="text-[#9A8A6A] text-sm">{{ __('ui.lobby.players') }}</span>
+                <span class="text-[#9A8A6A]"> / 24 {{ __('ui.lobby.players') }}</span>
             </div>
         </div>
 
