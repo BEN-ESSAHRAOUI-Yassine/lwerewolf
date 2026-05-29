@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Lobby;
 
 use App\Game\Services\LobbyService;
 use Livewire\Component;
@@ -20,11 +20,11 @@ class CreateRoom extends Component
 
         cookie()->queue(cookie()->make('session_token', $player->session_token, 1440, '/', null, false, true));
 
-        $this->redirect(route('lobby.narrator', $room->code));
+        $this->dispatch('room-created', redirectUrl: route('lobby.narrator', $room->code));
     }
 
     public function render()
     {
-        return view('livewire.create-room');
+        return view('livewire.lobby.create-room');
     }
 }

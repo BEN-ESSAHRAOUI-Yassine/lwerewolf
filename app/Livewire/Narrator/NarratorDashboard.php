@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Narrator;
 
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
@@ -284,7 +284,7 @@ class NarratorDashboard extends Component
             'little_girl', 'seer', 'witch', 'pied_piper', 'fox', 'bear_tamer',
         ];
 
-        return view('livewire.narrator-dashboard', [
+        return view('livewire.narrator.narrator-dashboard', [
             'players' => $players,
             'availableTransitions' => $availableTransitions,
             'voteTally' => $voteTally,

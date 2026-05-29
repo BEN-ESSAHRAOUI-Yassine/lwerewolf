@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Lobby;
 
 use App\Game\Services\LobbyService;
 use App\Models\Room;
@@ -22,11 +22,11 @@ class JoinRoom extends Component
 
         $player = $lobbyService->joinRoom($room, $this->nickname, request());
 
-        $this->redirect(route('lobby.player', $room->code));
+        $this->dispatch('room-joined', redirectUrl: route('lobby.player', $room->code));
     }
 
     public function render()
     {
-        return view('livewire.join-room');
+        return view('livewire.lobby.join-room');
     }
 }

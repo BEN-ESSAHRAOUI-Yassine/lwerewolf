@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Player;
 
-use App\Models\NightAction;
+use App\Models\NightAction as NightActionModel;
 use App\Models\Player;
 use App\Models\Room;
 use Livewire\Component;
 
-class NightActionPanel extends Component
+class NightAction extends Component
 {
     public Room $room;
     public Player $player;
     public ?string $selectedTargetId = null;
     public bool $submitted = false;
     public bool $confirming = false;
-    public ?NightAction $submittedAction = null;
+    public ?NightActionModel $submittedAction = null;
     public array $alivePlayers = [];
 
     public function mount(Room $room, Player $player)
@@ -43,7 +43,7 @@ class NightActionPanel extends Component
             ->get()
             ->toArray();
 
-        $existing = NightAction::where('game_state_id', $state->id)
+        $existing = NightActionModel::where('game_state_id', $state->id)
             ->where('player_id', $player->id)
             ->whereNull('resolved_at')
             ->first();
@@ -119,7 +119,7 @@ class NightActionPanel extends Component
             return '<div></div>';
         }
 
-        return view('livewire.night-action-panel', [
+        return view('livewire.player.night-action', [
             'role' => $role,
         ]);
     }

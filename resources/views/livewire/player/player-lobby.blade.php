@@ -13,7 +13,7 @@
         {{-- Players --}}
         <div class="mb-8">
             <h2 class="text-[#9A8A6A] text-sm uppercase tracking-wider mb-4">{{ __('ui.lobby.connected_players') }}</h2>
-            <livewire:player-list :room="$room" :wire:key="'player-list-'.$room->id" />
+            <livewire:shared.player-list :room="$room" :wire:key="'player-list-'.$room->id" />
         </div>
 
         {{-- Waiting State --}}

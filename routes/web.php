@@ -2,12 +2,12 @@
 
 use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\VoteController;
-use App\Http\Livewire\CreateRoom;
-use App\Http\Livewire\JoinRoom;
-use App\Http\Livewire\NarratorDashboard;
-use App\Http\Livewire\NarratorLobby;
-use App\Http\Livewire\PlayerGameView;
-use App\Http\Livewire\PlayerLobby;
+use App\Livewire\Lobby\CreateRoom;
+use App\Livewire\Lobby\JoinRoom;
+use App\Livewire\Narrator\NarratorDashboard;
+use App\Livewire\Narrator\NarratorLobby;
+use App\Livewire\Player\PlayerGameView;
+use App\Livewire\Player\PlayerLobby;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');

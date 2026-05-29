@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Player;
 
 use App\Game\Services\VotingService;
 use App\Models\Player;
@@ -120,7 +120,7 @@ class VotingPanel extends Component
             return '<div></div>';
         }
 
-        return view('livewire.voting-panel', [
+        return view('livewire.player.voting-panel', [
             'banned' => $banned,
         ]);
     }

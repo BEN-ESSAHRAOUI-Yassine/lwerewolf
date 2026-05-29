@@ -12,7 +12,7 @@ class PhaseManager
         'waiting' => ['night'],
         'night' => ['day', 'finished'],
         'day' => ['voting'],
-        'voting' => ['night', 'finished'],
+        'voting' => ['night', 'day', 'finished'],
         'finished' => [],
     ];
 

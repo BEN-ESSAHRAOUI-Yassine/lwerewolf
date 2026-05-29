@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Player;
 
 use App\Events\SuspiciousAccessAttempt;
 use App\Models\Player;
@@ -76,7 +76,7 @@ class PlayerGameView extends Component
                 ->get();
         }
 
-        return view('livewire.player-game-view', [
+        return view('livewire.player.player-game-view', [
             'state' => $state,
             'players' => $players,
         ])->layout('layouts.app');

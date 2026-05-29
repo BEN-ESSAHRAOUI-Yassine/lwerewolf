@@ -30,13 +30,14 @@ class LobbyController extends Controller
         return redirect()->route('lobby.narrator', $room->code);
     }
 
-    public function join(string $code, Request $request)
+    public function join(Request $request)
     {
-        $room = Room::where('code', strtoupper($code))->firstOrFail();
-
         $data = $request->validate([
+            'code' => 'required|string|size:6',
             'nickname' => 'required|string|max:30',
         ]);
+
+        $room = Room::where('code', strtoupper($data['code']))->firstOrFail();
 
         $player = $this->lobbyService->joinRoom($room, $data['nickname'], $request);
 

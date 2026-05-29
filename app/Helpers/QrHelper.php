@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use chillerlan\QRCode\Common\EccLevel;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -10,10 +11,8 @@ class QrHelper
     public static function generate(string $data): string
     {
         $options = new QROptions([
-            'outputType' => QRCode::OUTPUT_MARKUP_SVG,
-            'svgMultiplier' => 1,
             'svgAddXmlHeader' => false,
-            'eccLevel' => QRCode::ECC_M,
+            'eccLevel' => EccLevel::M,
             'scale' => 8,
         ]);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Player;
 
 use App\Models\Player;
 use Livewire\Component;
@@ -30,7 +30,7 @@ class RoleCard extends Component
 
     public function render()
     {
-        return view('livewire.role-card', [
+        return view('livewire.player.role-card', [
             'role' => $this->player->role,
         ]);
     }

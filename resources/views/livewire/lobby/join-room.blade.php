@@ -34,4 +34,14 @@
             </button>
         </form>
     </div>
+
+    @script
+        <script>
+            $wire.on('room-joined', (event) => {
+                setTimeout(() => {
+                    window.location.href = event.redirectUrl;
+                }, 100);
+            });
+        </script>
+    @endscript
 </div>

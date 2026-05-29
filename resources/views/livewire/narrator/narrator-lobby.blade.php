@@ -10,7 +10,7 @@
         {{-- Left: QR Code --}}
         <div class="flex flex-col items-center">
             <div class="bg-white p-4 rounded-lg mb-4">
-                {!! $qrSvg !!}
+                <img src="{{ $qrSvg }}" alt="QR Code" class="w-48 h-48">
             </div>
             <p class="text-[#9A8A6A] text-sm">{{ __('ui.lobby.scan_to_join') }}</p>
 
@@ -24,7 +24,7 @@
         {{-- Right: Players --}}
         <div>
             <h2 class="text-[#E8D9B5] font-semibold mb-4">{{ __('ui.lobby.connected_players') }}</h2>
-            <livewire:player-list :room="$room" :wire:key="'player-list-'.$room->id" />
+            <livewire:shared.player-list :room="$room" :wire:key="'player-list-'.$room->id" />
         </div>
     </div>
 

@@ -29,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
         if ($locale && in_array($locale, ['en', 'fr'])) {
             app()->setLocale($locale);
         }
+
+        // URL scheme is handled by Ngrok's TLS termination — not forced here
     }
 
     /**

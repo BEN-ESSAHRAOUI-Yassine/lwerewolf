@@ -25,7 +25,7 @@ return [
     | each backend supported by Laravel. You're also free to add more.
     |
     | Drivers: "sync", "database", "beanstalkd", "sqs", "redis",
-    |          "deferred", "background", "failover", "null"
+    |          "deferred", "failover", "null"
     |
     */
 
@@ -62,6 +62,12 @@ return [
             'suffix' => env('SQS_SUFFIX'),
             'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
             'after_commit' => false,
+            'overflow' => [
+                'enabled' => env('SQS_OVERFLOW_ENABLED', false),
+                'store' => env('SQS_OVERFLOW_STORE'),
+                'always' => false,
+                'delete_after_processing' => true,
+            ],
         ],
 
         'redis' => [
@@ -75,10 +81,6 @@ return [
 
         'deferred' => [
             'driver' => 'deferred',
-        ],
-
-        'background' => [
-            'driver' => 'background',
         ],
 
         'failover' => [

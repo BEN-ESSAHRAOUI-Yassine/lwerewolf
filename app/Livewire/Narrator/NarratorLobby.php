@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire\Narrator;
 
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
@@ -146,7 +146,7 @@ class NarratorLobby extends Component
 
     public function startGame(GameEngine $engine)
     {
-        $player = request()->get('_player');
+        $player = Player::where('session_token', request()->cookie('session_token'))->first();
         if (!$player || !$player->is_narrator || $player->room_id !== $this->room->id) {
             abort(403);
         }
@@ -174,7 +174,7 @@ class NarratorLobby extends Component
     {
         $roles = Role::orderBy('faction')->orderBy('key')->get()->groupBy('faction');
 
-        return view('livewire.narrator-lobby', [
+        return view('livewire.narrator.narrator-lobby', [
             'roles' => $roles,
             'players' => Player::where('room_id', $this->room->id)
                 ->where('is_narrator', false)
