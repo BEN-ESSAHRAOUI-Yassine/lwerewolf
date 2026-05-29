@@ -36,6 +36,7 @@ class PlayerList extends Component
 
     public function render()
     {
+        $this->refreshPlayers();
         return view('livewire.shared.player-list');
     }
 }

@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.3s>
     {{-- Header --}}
     <div class="flex flex-col items-center mb-8">
         <p class="text-[#9A8A6A] text-sm mb-1">{{ __('ui.lobby.room_code') }}</p>
@@ -22,7 +22,7 @@
         </div>
 
         {{-- Right: Players --}}
-        <div>
+<div wire:poll.3s>
             <h2 class="text-[#E8D9B5] font-semibold mb-4">{{ __('ui.lobby.connected_players') }}</h2>
             <livewire:shared.player-list :room="$room" :wire:key="'player-list-'.$room->id" />
         </div>

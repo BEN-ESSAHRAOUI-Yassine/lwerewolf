@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.3s>
     <div class="space-y-2">
         @foreach($players as $p)
             <div class="flex items-center gap-3 px-4 py-3 bg-[#1A1510] rounded-lg border border-[#251E16]">

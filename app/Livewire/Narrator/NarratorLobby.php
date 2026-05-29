@@ -174,6 +174,9 @@ class NarratorLobby extends Component
     {
         $roles = Role::orderBy('faction')->orderBy('key')->get()->groupBy('faction');
 
+        $this->refreshPlayerCount();
+        $this->validateConfig();
+
         return view('livewire.narrator.narrator-lobby', [
             'roles' => $roles,
             'players' => Player::where('room_id', $this->room->id)
