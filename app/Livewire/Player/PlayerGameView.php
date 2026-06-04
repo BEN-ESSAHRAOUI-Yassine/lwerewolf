@@ -113,10 +113,11 @@ class PlayerGameView extends Component
 
     public function onSeerResult(array $payload)
     {
+        $factionKey = $payload['faction'] ?? '';
         $this->dispatch('show-result', [
             'type' => 'seer',
             'nickname' => $payload['target_nickname'] ?? '',
-            'faction' => $payload['faction'] ?? '',
+            'faction' => __('ui.factions.' . $factionKey),
         ]);
     }
 
