@@ -255,7 +255,8 @@
                 <div class="bg-[#1A1510] border-2 border-[#C8922A] rounded-2xl p-8 max-w-lg w-full mx-4 text-center">
                     <h2 class="text-[#C8922A] text-2xl font-bold mb-2">{{ __('ui.game.over') }}</h2>
                     <p class="text-[#E8D9B5] text-xl mb-6">
-                        {{ __("ui.win.{$state->data['winning_faction'] ?? 'no_one'}") }}
+                        @php $winningFaction = $state->data['winning_faction'] ?? 'no_one'; @endphp
+                        {{ __("ui.win.{$winningFaction}") }}
                     </p>
 
                     {{-- All players with their roles revealed --}}

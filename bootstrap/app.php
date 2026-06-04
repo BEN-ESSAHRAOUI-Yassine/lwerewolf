@@ -12,9 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias([
-            'player' => \App\Http\Middleware\IdentifyPlayer::class,
+        $middleware->validateCsrfTokens(except: [
+            '/broadcasting/auth',
         ]);
+
+        $middleware->appendToGroup('web', \App\Http\Middleware\IdentifyPlayer::class);
 
         $middleware->prepend(\App\Http\Middleware\NgrokHeaders::class);
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Narrator;
 
+use App\Events\PlayerLeft;
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
 use App\Game\Services\LobbyService;
@@ -139,6 +140,7 @@ class NarratorLobby extends Component
     public function removePlayer(int $playerId)
     {
         $player = Player::findOrFail($playerId);
+        event(new PlayerLeft($player));
         $player->delete();
         $this->refreshPlayerCount();
         $this->validateConfig();

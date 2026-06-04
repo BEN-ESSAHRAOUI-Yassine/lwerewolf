@@ -71,6 +71,7 @@ class RoleAssignmentService
                     'witch_poison_used' => false,
                     'devoted_servant_used' => false,
                     'knight_killed_by_werewolf' => false,
+                    'players_ready' => [],
                 ],
             ]);
 

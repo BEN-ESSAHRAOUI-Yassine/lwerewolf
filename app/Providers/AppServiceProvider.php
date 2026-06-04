@@ -30,6 +30,11 @@ class AppServiceProvider extends ServiceProvider
             app()->setLocale($locale);
         }
 
+        auth()->viaRequest('session-token', function ($request) {
+            $token = $request->cookie('session_token');
+            return $token ? \App\Models\Player::where('session_token', $token)->first() : null;
+        });
+
         // URL scheme is handled by Ngrok's TLS termination — not forced here
     }
 

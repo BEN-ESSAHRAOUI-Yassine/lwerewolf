@@ -1,3 +1,5 @@
+console.log('BOOTSTRAP_LOADED_987654');
+
 import axios from 'axios';
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -12,8 +14,8 @@ window.Echo = new Echo({
     wsHost: import.meta.env.VITE_REVERB_HOST,
     wsPort: import.meta.env.VITE_REVERB_PORT,
     wssPort: import.meta.env.VITE_REVERB_PORT,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+    forceTLS: true, // FORCE_TLS_MARKER
     enabledTransports: ['ws', 'wss'],
     authEndpoint: '/broadcasting/auth',
-    csrfToken: () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+    csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
 });

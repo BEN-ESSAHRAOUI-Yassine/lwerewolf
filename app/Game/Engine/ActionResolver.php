@@ -41,9 +41,13 @@ class ActionResolver
     ];
 
     public function __construct(
-        private GameEngine $engine,
         private WinConditionChecker $winChecker,
     ) {}
+
+    private function engine(): GameEngine
+    {
+        return app(GameEngine::class);
+    }
 
     public function resolve(GameState $state): void
     {
@@ -119,7 +123,7 @@ class ActionResolver
                     $action->resolve($state);
                     $winner = $this->winChecker->check($state);
                     if ($winner) {
-                        $this->engine->endGame($state, $winner);
+                        $this->engine()->endGame($state, $winner);
                         return;
                     }
                 } elseif ($action instanceof CupidLinkAction) {
@@ -227,7 +231,7 @@ class ActionResolver
 
                 $winner = $this->winChecker->check($state);
                 if ($winner) {
-                    $this->engine->endGame($state, $winner);
+                    $this->engine()->endGame($state, $winner);
                     return;
                 }
                 continue;
@@ -250,7 +254,7 @@ class ActionResolver
 
             $winner = $this->winChecker->check($state);
             if ($winner) {
-                $this->engine->endGame($state, $winner);
+                $this->engine()->endGame($state, $winner);
                 return;
             }
 

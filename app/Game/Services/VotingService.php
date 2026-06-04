@@ -2,6 +2,7 @@
 
 namespace App\Game\Services;
 
+use App\Events\LoverDied;
 use App\Events\PlayerEliminated;
 use App\Events\VillageIdiotRevealed;
 use App\Events\VoteSubmitted;
@@ -140,18 +141,6 @@ class VotingService
     {
         $role = $player->role;
 
-        if ($role && $role->key === 'hunter') {
-            $player->is_alive = false;
-            $player->save();
-            event(new PlayerEliminated($player));
-
-            $winner = $this->winChecker->check($state);
-            if ($winner) return $winner;
-
-            $this->processLoverDeath($state, $player);
-            return $this->winChecker->check($state);
-        }
-
         if ($role && $role->key === 'knight_with_rusty_sword') {
             $data = $state->data ?? [];
             $data['knight_killed_by_werewolf'] = false;
@@ -159,46 +148,65 @@ class VotingService
             $state->save();
         }
 
-        $player->is_alive = false;
-        $player->save();
-        event(new PlayerEliminated($player));
+        $checkAngel = $role && $role->key === 'angel' && $state->round === 1;
 
-        $winner = $this->winChecker->check($state);
-        if ($winner) return $winner;
+        return $this->applyDeathWithChain($state, $player, $checkAngel);
+    }
 
-        $this->processLoverDeath($state, $player);
+    private function applyDeathWithChain(GameState $state, Player $player, bool $checkAngel = false): ?\App\Game\Factions\FactionInterface
+    {
+        $toProcess = [[$player, $checkAngel]];
+        $processedIds = [];
 
-        if ($role && $role->key === 'angel' && $state->round === 1) {
-            $data = $state->data ?? [];
-            $data['angel_eliminated_by_vote'] = true;
-            $state->data = $data;
-            $state->save();
+        while (!empty($toProcess)) {
+            [$current, $checkAngelForThis] = array_shift($toProcess);
+            if (in_array($current->id, $processedIds)) continue;
+            $processedIds[] = $current->id;
+
+            $role = $current->role;
+
+            if ($role && $role->key === 'hunter') {
+                $current->is_alive = false;
+                $current->save();
+                event(new PlayerEliminated($current));
+
+                $winner = $this->winChecker->check($state);
+                if ($winner) return $winner;
+
+                continue;
+            }
+
+            $current->is_alive = false;
+            $current->save();
+            event(new PlayerEliminated($current));
+
+            if ($checkAngelForThis && $role && $role->key === 'angel') {
+                $data = $state->data ?? [];
+                $data['angel_eliminated_by_vote'] = true;
+                $state->data = $data;
+                $state->save();
+            }
 
             $winner = $this->winChecker->check($state);
             if ($winner) return $winner;
+
+            $bond = CoupleBond::where('game_state_id', $state->id)
+                ->where(function ($q) use ($current) {
+                    $q->where('player_id', $current->id)
+                      ->orWhere('partner_id', $current->id);
+                })->first();
+
+            if ($bond) {
+                $partnerId = $bond->player_id === $current->id ? $bond->partner_id : $bond->player_id;
+                $partner = Player::find($partnerId);
+
+                if ($partner && $partner->is_alive) {
+                    event(new LoverDied($current, $partner));
+                    $toProcess[] = [$partner, false];
+                }
+            }
         }
 
-        return $this->winChecker->check($state);
-    }
-
-    private function processLoverDeath(GameState $state, Player $player): void
-    {
-        $bond = CoupleBond::where('game_state_id', $state->id)
-            ->where(function ($q) use ($player) {
-                $q->where('player_id', $player->id)
-                  ->orWhere('partner_id', $player->id);
-            })
-            ->first();
-
-        if (!$bond) return;
-
-        $partnerId = $bond->player_id === $player->id ? $bond->partner_id : $bond->player_id;
-        $partner = Player::find($partnerId);
-
-        if ($partner && $partner->is_alive) {
-            $partner->is_alive = false;
-            $partner->save();
-            event(new PlayerEliminated($partner));
-        }
+        return null;
     }
 }

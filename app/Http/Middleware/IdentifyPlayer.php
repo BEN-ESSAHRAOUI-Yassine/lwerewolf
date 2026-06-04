@@ -12,17 +12,13 @@ class IdentifyPlayer
     {
         $token = $request->cookie('session_token');
 
-        if (!$token) {
-            abort(401, 'No session token');
+        if ($token) {
+            $player = Player::where('session_token', $token)->first();
+
+            if ($player) {
+                $request->merge(['_player' => $player]);
+            }
         }
-
-        $player = Player::where('session_token', $token)->first();
-
-        if (!$player) {
-            abort(401, 'Invalid session token');
-        }
-
-        $request->merge(['_player' => $player]);
 
         return $next($request);
     }

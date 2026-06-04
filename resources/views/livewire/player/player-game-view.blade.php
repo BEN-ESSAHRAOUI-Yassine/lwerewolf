@@ -1,10 +1,21 @@
 <div class="min-h-screen flex flex-col items-center justify-center p-8"
-     x-data="{ showOverlay: false, phaseLabel: '', phaseClass: '' }"
+     x-data="{
+         showOverlay: false,
+         phaseLabel: '',
+         phaseClass: '',
+         resultNotif: null,
+         resultTimer: null,
+     }"
      @transition-phase.window="
          showOverlay = true;
          phaseLabel = $event.detail.label;
          phaseClass = $event.detail.class;
          setTimeout(() => { showOverlay = false; }, 1500);
+     "
+     @show-result.window="
+         resultNotif = $event.detail;
+         if (resultTimer) clearTimeout(resultTimer);
+         resultTimer = setTimeout(() => { resultNotif = null; }, 6000);
      "
 >
     {{-- Phase transition overlay --}}
@@ -21,6 +32,75 @@
         <h2 class="text-4xl font-serif font-bold text-[#E8D9B5]" x-text="phaseLabel"></h2>
     </div>
 
+    {{-- Result notification --}}
+    <div x-show="resultNotif" x-cloak
+         class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#1A1510] border-2 rounded-xl px-6 py-4 shadow-2xl max-w-md w-full text-center"
+         :class="{
+             'border-[#C8922A]': resultNotif?.type === 'seer' || resultNotif?.type === 'fox',
+             'border-[#8B2020]': resultNotif?.type === 'night_resolved' || resultNotif?.type === 'lover_died',
+             'border-[#C8922A]/60': resultNotif?.type === 'village_idiot',
+         }"
+         x-transition:enter="transition-all duration-300"
+         x-transition:enter-start="opacity-0 -translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition-all duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+
+        {{-- Seer result --}}
+        <template x-if="resultNotif?.type === 'seer'">
+            <div>
+                <p class="text-[#9A8A6A] text-xs uppercase tracking-widest" x-text="resultNotif.nickname"></p>
+                <p class="text-[#E8D9B5] text-lg mt-1">
+                    {{ __('ui.result.faction_label') }}: <span x-text="resultNotif.faction"></span>
+                </p>
+            </div>
+        </template>
+
+        {{-- Fox result --}}
+        <template x-if="resultNotif?.type === 'fox'">
+            <div>
+                <p class="text-[#E8D9B5] text-lg"
+                   x-text="resultNotif.found ? '{{ __("ui.result.wolves_found") }}' : '{{ __("ui.result.no_wolves_found") }}'">
+                </p>
+            </div>
+        </template>
+
+        {{-- Night resolved --}}
+        <template x-if="resultNotif?.type === 'night_resolved'">
+            <div>
+                <p class="text-[#E8D9B5] text-lg font-bold">{{ __('ui.result.night_eliminations') }}</p>
+                <div class="mt-2 space-y-1">
+                    <template x-for="name in resultNotif.eliminated" :key="name">
+                        <p class="text-[#8B2020]" x-text="name"></p>
+                    </template>
+                </div>
+                <p x-show="resultNotif.eliminated.length === 0" class="text-[#9A8A6A] italic mt-2">
+                    {{ __('ui.result.no_deaths') }}
+                </p>
+            </div>
+        </template>
+
+        {{-- Lover died --}}
+        <template x-if="resultNotif?.type === 'lover_died'">
+            <div>
+                <p class="text-[#8B2020] text-lg font-bold">{{ __('ui.result.lover_died_title') }}</p>
+                <p class="text-[#E8D9B5] mt-1">
+                    <span x-text="resultNotif.partner_nickname"></span>
+                    {{ __('ui.result.lover_died_text') }}
+                </p>
+            </div>
+        </template>
+
+        {{-- Village Idiot revealed --}}
+        <template x-if="resultNotif?.type === 'village_idiot'">
+            <div>
+                <p class="text-[#C8922A] text-lg font-bold">{{ __('ui.result.idiot_revealed') }}</p>
+                <p class="text-[#E8D9B5] mt-1" x-text="resultNotif.nickname"></p>
+            </div>
+        </template>
+    </div>
+
     {{-- Phase indicator --}}
     <div class="mb-8 text-center">
         <p class="text-[#9A8A6A] text-sm uppercase tracking-widest">
@@ -31,13 +111,36 @@
         </h1>
     </div>
 
-    @if($state->phase === 'finished')
+    @if($state->phase === 'waiting')
+        {{-- Ready phase — show role card + ready button --}}
+        <livewire:player.role-card :player="$player" :wire:key="'role-'.$player->id" />
+
+        <div class="mt-8 w-full max-w-md text-center">
+            @if($ready)
+                <div class="bg-[#1A1510] border border-[#3A6B3A] rounded-xl p-6">
+                    <div class="text-3xl mb-2 text-[#3A6B3A]">&#10003;</div>
+                    <p class="text-[#9A8A6A]">{{ __('ui.game.waiting_for_others') }}</p>
+                </div>
+            @else
+                <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6">
+                    <p class="text-[#9A8A6A] text-sm mb-4">{{ __('ui.game.your_role') }}</p>
+                    <button
+                        wire:click="readyUp"
+                        class="w-full px-6 py-4 bg-[#C8922A] text-[#1A1510] font-bold rounded-xl hover:bg-[#D9A33B] transition-colors text-lg"
+                    >
+                        {{ __('ui.game.ready_button') }}
+                    </button>
+                </div>
+            @endif
+        </div>
+    @elseif($state->phase === 'finished')
         {{-- Game Over screen --}}
         <div class="bg-[#1A1510] border-2 border-[#C8922A] rounded-2xl p-8 max-w-lg w-full text-center">
             <h2 class="text-[#C8922A] text-2xl font-bold mb-6">{{ __('ui.game.over') }}</h2>
 
+            @php $winningFaction = $state->data['winning_faction'] ?? 'no_one'; @endphp
             <p class="text-[#E8D9B5] text-lg mb-4">
-                {{ __("ui.win.{$state->data['winning_faction'] ?? 'no_one'}") }}
+                {{ __("ui.win.{$winningFaction}") }}
             </p>
 
             {{-- All players with roles revealed --}}
@@ -60,7 +163,7 @@
         </div>
     @else
         {{-- Normal game view --}}
-        <livewire:role-card :player="$player" :wire:key="'role-'.$player->id" />
+        <livewire:player.role-card :player="$player" :wire:key="'role-'.$player->id" />
 
         <div class="mt-8 w-full max-w-md">
             @if(!$player->is_alive)
@@ -74,7 +177,7 @@
                     <p class="text-[#9A8A6A] italic">{{ __('ui.game.decoy_prompt') }}</p>
                 </div>
             @elseif($state->phase === 'voting' && !$player->is_narrator)
-                <livewire:voting-panel :room="$room" :player="$player" :wire:key="'voting-'.$player->id" />
+                <livewire:player.voting-panel :room="$room" :player="$player" :wire:key="'voting-'.$player->id" />
             @elseif($state->phase === 'day')
                 <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
                     <p class="text-[#9A8A6A]">{{ __('ui.game.discussion_time') }}</p>

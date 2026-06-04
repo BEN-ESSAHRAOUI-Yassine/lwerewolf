@@ -25,8 +25,6 @@ class GameEngine
         return DB::transaction(function () use ($room) {
             $state = $this->roleAssignment->assign($room);
 
-            $this->phaseManager->transition($state, 'night');
-
             return $state->fresh();
         });
     }

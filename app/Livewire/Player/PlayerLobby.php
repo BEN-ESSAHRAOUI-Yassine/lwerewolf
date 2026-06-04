@@ -44,7 +44,13 @@ class PlayerLobby extends Component
         return [
             "echo-private:room.{$this->room->id},PlayerJoined" => 'refreshPlayers',
             "echo-private:room.{$this->room->id},PlayerLeft" => 'refreshPlayers',
+            "echo-private:room.{$this->room->id},GameStarted" => 'onGameStarted',
         ];
+    }
+
+    public function onGameStarted()
+    {
+        $this->redirect(route('game.player', $this->room));
     }
 
     public function render()

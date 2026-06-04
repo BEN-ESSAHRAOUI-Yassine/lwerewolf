@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Narrator;
 
+use App\Events\GameReset;
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
 use App\Models\CoupleBond;
@@ -109,6 +110,8 @@ class NarratorDashboard extends Component
             })->delete();
         }
 
+        event(new GameReset($room));
+
         $this->redirect(route('lobby.narrator', $room));
     }
 
@@ -189,6 +192,7 @@ class NarratorDashboard extends Component
             "echo-private:narrator.{$this->room->id},VoteSubmitted" => 'onVoteSubmitted',
             "echo-private:narrator.{$this->room->id},SuspiciousAccessAttempt" => 'onSuspiciousAccess',
             "echo-private:room.{$this->room->id},GameFinished" => 'onGameFinished',
+            "echo-private:room.{$this->room->id},AllPlayersReady" => 'onAllPlayersReady',
         ];
     }
 
@@ -198,12 +202,14 @@ class NarratorDashboard extends Component
         $this->refreshNightFeed();
         $phase = $this->state->phase;
         $labels = [
+            'waiting' => __('ui.phase.waiting'),
             'night' => __('ui.phase.night'),
             'day' => __('ui.phase.day'),
             'voting' => __('ui.phase.voting'),
             'finished' => __('ui.phase.finished'),
         ];
         $classes = [
+            'waiting' => 'phase-overlay phase-overlay-waiting',
             'night' => 'phase-overlay phase-overlay-night',
             'day' => 'phase-overlay phase-overlay-day',
             'voting' => 'phase-overlay phase-overlay-voting',
@@ -243,6 +249,12 @@ class NarratorDashboard extends Component
         $this->addLogEntry('game_finished', [
             'winning_faction' => $payload['winning_faction'] ?? 'unknown',
         ]);
+    }
+
+    public function onAllPlayersReady()
+    {
+        $this->addLogEntry('all_players_ready', []);
+        $this->advancePhase('night');
     }
 
     public function render()
