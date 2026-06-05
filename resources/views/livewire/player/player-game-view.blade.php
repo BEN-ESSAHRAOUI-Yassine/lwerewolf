@@ -192,6 +192,42 @@
             </div>
         @endif
 
+        @php
+            $mySeerResult = $state->data['seer_results'][$player->id] ?? null;
+            $myFoxResult = $state->data['fox_results'][$player->id] ?? null;
+        @endphp
+
+        @if(($mySeerResult || $myFoxResult) && in_array($state->phase, ['day', 'voting']))
+            <div class="mt-6 w-full max-w-md">
+                <div class="bg-[#1A1510] border border-[#C8922A]/60 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-[#C8922A] text-xs uppercase tracking-widest">{{ __('ui.result.your_results') }}</p>
+                    </div>
+                    @if($mySeerResult)
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="text-[#9A8A6A] text-xs">{{ $mySeerResult['target_nickname'] }}</p>
+                                <p class="text-[#E8D9B5] text-sm">
+                                    {{ __('ui.result.faction_label') }}: {{ __("ui.factions.{$mySeerResult['faction']}") }}
+                                </p>
+                            </div>
+                            <button wire:click="dismissResult('seer')"
+                                    class="text-[#6A5A4A] hover:text-[#C8922A] text-lg leading-none">&times;</button>
+                        </div>
+                    @endif
+                    @if($myFoxResult)
+                        <div class="flex justify-between items-start">
+                            <p class="text-[#E8D9B5] text-sm">
+                                {{ $myFoxResult['werewolf_found'] ? __('ui.result.wolves_found') : __('ui.result.no_wolves_found') }}
+                            </p>
+                            <button wire:click="dismissResult('fox')"
+                                    class="text-[#6A5A4A] hover:text-[#C8922A] text-lg leading-none">&times;</button>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         <div class="mt-8 w-full max-w-md">
             @if(!$player->is_alive)
                 <div class="bg-[#1A1510] border border-[#8B2020] rounded-xl p-6 text-center">

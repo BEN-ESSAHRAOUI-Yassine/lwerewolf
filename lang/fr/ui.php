@@ -94,6 +94,7 @@ return [
         'lover_died_text' => 'le/la suit dans la mort.',
         'idiot_revealed' => 'Idiot du village révélé !',
         'faction_label' => 'Faction',
+        'your_results' => 'Vos résultats de la nuit',
     ],
     'game' => [
         'over' => 'Partie terminée',

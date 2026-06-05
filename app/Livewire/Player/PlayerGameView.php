@@ -85,11 +85,18 @@ class PlayerGameView extends Component
         $this->state = $this->state->fresh();
     }
 
+    public function hydrate(): void
+    {
+        $room = $this->room ?? null;
+        if ($room && !$room->gameState) {
+            $this->redirect(route('lobby.player', $room));
+        }
+    }
+
     public function onPlayerEliminated()
     {
         $this->player = $this->player->fresh(['role']);
         $this->state = $this->room->gameState;
-        $this->checkStoredResults();
     }
 
     public function onGameFinished()
@@ -126,43 +133,15 @@ class PlayerGameView extends Component
             'finished' => 'phase-overlay phase-overlay-finished',
         ];
         $this->dispatch('transition-phase', label: $labels[$phase] ?? '', class: $classes[$phase] ?? '');
-
-        $this->checkStoredResults();
     }
 
-    private function checkStoredResults(): void
+    public function dismissResult(string $type): void
     {
+        if (!$this->state) return;
         $data = $this->state->data ?? [];
-        $playerId = $this->player->id;
-        $changed = false;
-
-        $seerResults = $data['seer_results'] ?? [];
-        if (isset($seerResults[$playerId])) {
-            $result = $seerResults[$playerId];
-            $this->dispatch('show-result', [
-                'type' => 'seer',
-                'nickname' => $result['target_nickname'] ?? '',
-                'faction' => __('ui.factions.' . ($result['faction'] ?? '')),
-            ]);
-            unset($data['seer_results'][$playerId]);
-            $changed = true;
-        }
-
-        $foxResults = $data['fox_results'] ?? [];
-        if (isset($foxResults[$playerId])) {
-            $result = $foxResults[$playerId];
-            $this->dispatch('show-result', [
-                'type' => 'fox',
-                'found' => $result['werewolf_found'] ?? false,
-            ]);
-            unset($data['fox_results'][$playerId]);
-            $changed = true;
-        }
-
-        if ($changed) {
-            $this->state->data = $data;
-            $this->state->save();
-        }
+        unset($data[$type . '_results'][$this->player->id]);
+        $this->state->data = $data;
+        $this->state->save();
     }
 
     public function onSeerResult(array $payload)
@@ -185,10 +164,10 @@ class PlayerGameView extends Component
 
     public function onNightResolved(array $payload)
     {
+        $this->state = $this->room?->gameState;
         $this->dispatch('show-night-resolved', [
             'eliminated' => $payload['eliminated'] ?? [],
         ]);
-        $this->checkStoredResults();
     }
 
     public function onLoverDied(array $payload)
@@ -215,14 +194,15 @@ class PlayerGameView extends Component
 
     public function render()
     {
+        $this->state = $this->room?->gameState;
+
         if (!$this->state) {
-            $this->state = $this->room->gameState;
+            $this->redirect(route('lobby.player', $this->room));
+            return;
         }
 
-        $this->checkStoredResults();
-
         $players = collect();
-        if ($this->state && $this->state->phase === 'finished') {
+        if ($this->state->phase === 'finished') {
             $players = Player::where('room_id', $this->room->id)
                 ->where('is_narrator', false)
                 ->with('role')

@@ -94,6 +94,7 @@ return [
         'lover_died_text' => 'follows them in death.',
         'idiot_revealed' => 'Village Idiot revealed!',
         'faction_label' => 'Faction',
+        'your_results' => 'Your Night Results',
     ],
     'game' => [
         'over' => 'Game Over',
