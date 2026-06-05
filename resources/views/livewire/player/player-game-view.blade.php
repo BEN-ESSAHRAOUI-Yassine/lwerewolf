@@ -198,8 +198,21 @@
         @endphp
 
         @if(($mySeerResult || $myFoxResult) && in_array($state->phase, ['day', 'voting']))
-            <div class="mt-6 w-full max-w-md">
-                <div class="bg-[#1A1510] border border-[#C8922A]/60 rounded-xl p-4">
+            <div class="mt-6 w-full max-w-md"
+                 x-data="{ revealed: false }"
+                 x-on:mousedown="revealed = true"
+                 x-on:mouseup="revealed = false"
+                 x-on:mouseleave="revealed = false"
+                 x-on:touchstart="revealed = true"
+                 x-on:touchend="revealed = false">
+                {{-- Masked face (looks like default day prompt) --}}
+                <div x-show="!revealed"
+                     class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
+                    <p class="text-[#9A8A6A]">{{ __('ui.game.discussion_time') }}</p>
+                </div>
+                {{-- Revealed face --}}
+                <div x-show="revealed" x-cloak
+                     class="bg-[#1A1510] border border-[#C8922A]/60 rounded-xl p-4">
                     <div class="flex items-center justify-between mb-3">
                         <p class="text-[#C8922A] text-xs uppercase tracking-widest">{{ __('ui.result.your_results') }}</p>
                     </div>
@@ -241,7 +254,7 @@
                 </div>
             @elseif($state->phase === 'voting' && !$player->is_narrator)
                 <livewire:player.voting-panel :room="$room" :player="$player" :wire:key="'voting-'.$player->id" />
-            @elseif($state->phase === 'day')
+            @elseif($state->phase === 'day' && !$mySeerResult && !$myFoxResult)
                 <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
                     <p class="text-[#9A8A6A]">{{ __('ui.game.discussion_time') }}</p>
                 </div>
