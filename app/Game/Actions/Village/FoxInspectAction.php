@@ -57,6 +57,13 @@ class FoxInspectAction extends BaseAction
             $state->save();
         }
 
+        $data = $state->data ?? [];
+        $data['fox_results'][$this->record->player_id] = [
+            'werewolf_found' => $werewolfFound,
+        ];
+        $state->data = $data;
+        $state->save();
+
         event(new FoxResultReady($this->record->player, $werewolfFound));
     }
 }

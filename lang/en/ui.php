@@ -113,6 +113,7 @@ return [
         'unknown_role' => 'Unknown role',
         'lover_short' => 'Lover',
         'enchanted_short' => 'Enchanted',
+        'last_night' => 'Last night',
     ],
     'narrator' => [
         'pending_actions' => 'Pending actions',
@@ -146,6 +147,7 @@ return [
         'action_choose_side' => 'Chose sides',
         'action_generic' => ':type → :name',
         'waiting_for_new_game' => 'Waiting for the narrator to start a new game...',
+        'action_history' => 'Action History',
     ],
     'role' => [
         'hold_to_reveal' => 'Hold to reveal',

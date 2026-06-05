@@ -5,6 +5,8 @@
          phaseClass: '',
          resultNotif: null,
          resultTimer: null,
+         nightEliminated: null,
+         nightTimer: null,
      }"
      @transition-phase.window="
          showOverlay = true;
@@ -16,6 +18,11 @@
          resultNotif = $event.detail;
          if (resultTimer) clearTimeout(resultTimer);
          resultTimer = setTimeout(() => { resultNotif = null; }, 6000);
+     "
+     @show-night-resolved.window="
+         nightEliminated = $event.detail;
+         if (nightTimer) clearTimeout(nightTimer);
+         nightTimer = setTimeout(() => { nightEliminated = null; }, 8000);
      "
 >
     {{-- Phase transition overlay --}}
@@ -66,21 +73,6 @@
             </div>
         </template>
 
-        {{-- Night resolved --}}
-        <template x-if="resultNotif?.type === 'night_resolved'">
-            <div>
-                <p class="text-[#E8D9B5] text-lg font-bold">{{ __('ui.result.night_eliminations') }}</p>
-                <div class="mt-2 space-y-1">
-                    <template x-for="name in resultNotif.eliminated" :key="name">
-                        <p class="text-[#8B2020]" x-text="name"></p>
-                    </template>
-                </div>
-                <p x-show="resultNotif.eliminated.length === 0" class="text-[#9A8A6A] italic mt-2">
-                    {{ __('ui.result.no_deaths') }}
-                </p>
-            </div>
-        </template>
-
         {{-- Lover died --}}
         <template x-if="resultNotif?.type === 'lover_died'">
             <div>
@@ -99,6 +91,26 @@
                 <p class="text-[#E8D9B5] mt-1" x-text="resultNotif.nickname"></p>
             </div>
         </template>
+    </div>
+
+    {{-- Night resolved notification (separate — does not overwrite role-specific results) --}}
+    <div x-show="nightEliminated" x-cloak
+         class="fixed top-24 left-1/2 -translate-x-1/2 z-40 bg-[#1A1510] border-2 border-[#8B2020] rounded-xl px-6 py-4 shadow-2xl max-w-md w-full text-center"
+         x-transition:enter="transition-all duration-300"
+         x-transition:enter-start="opacity-0 -translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition-all duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <p class="text-[#E8D9B5] text-lg font-bold">{{ __('ui.result.night_eliminations') }}</p>
+        <div class="mt-2 space-y-1">
+            <template x-for="name in nightEliminated.eliminated" :key="name">
+                <p class="text-[#8B2020]" x-text="name"></p>
+            </template>
+        </div>
+        <p x-show="nightEliminated.eliminated.length === 0" class="text-[#9A8A6A] italic mt-2">
+            {{ __('ui.result.no_deaths') }}
+        </p>
     </div>
 
     {{-- Phase indicator --}}
@@ -164,6 +176,21 @@
     @else
         {{-- Normal game view --}}
         <livewire:player.role-card :player="$player" :wire:key="'role-'.$player->id" />
+
+        @php $lastNightDeaths = $state->data['last_night_deaths'] ?? []; @endphp
+
+        @if(!empty($lastNightDeaths) && in_array($state->phase, ['day', 'voting']))
+            <div class="mt-6 w-full max-w-md">
+                <div class="bg-[#1A1510] border border-[#8B2020]/50 rounded-xl p-4 text-center">
+                    <p class="text-[#9A8A6A] text-xs uppercase tracking-widest mb-2">{{ __('ui.game.last_night') }}</p>
+                    <div class="space-y-1">
+                        @foreach($lastNightDeaths as $name)
+                            <p class="text-[#8B2020] text-sm">{{ $name }}</p>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="mt-8 w-full max-w-md">
             @if(!$player->is_alive)

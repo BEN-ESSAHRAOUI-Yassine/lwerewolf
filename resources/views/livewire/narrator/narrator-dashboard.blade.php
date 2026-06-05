@@ -246,6 +246,51 @@
                     </div>
                 </div>
 
+                {{-- Action history (always visible) --}}
+                <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-4">
+                    <h2 class="text-[#E8D9B5] text-sm font-semibold mb-3">{{ __('ui.narrator.action_history') }}</h2>
+                    <div class="space-y-1.5 max-h-64 overflow-y-auto">
+                        @forelse(array_reverse($actionHistory) as $action)
+                            <div class="px-2.5 py-1.5 bg-[#251E16]/30 rounded text-xs border-l-2 border-[#5C4A1A]">
+                                <div class="flex items-center justify-between text-[#9A8A6A]">
+                                    <span>R{{ $action['round'] }} — {{ $action['player_nickname'] }} ({{ __("roles.{$action['role_key']}.name") }})</span>
+                                    <span class="text-[#6A5A4A] text-[10px]">{{ \Carbon\Carbon::parse($action['timestamp'])->isoFormat('HH:mm') }}</span>
+                                </div>
+                                <p class="text-[#C8922A] mt-0.5">
+                                    @if($action['action_type'] === 'inspect')
+                                        {{ __('ui.narrator.action_inspect', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'kill')
+                                        {{ __('ui.narrator.action_kill', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'extra_kill')
+                                        {{ __('ui.narrator.action_extra_kill', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'convert')
+                                        {{ __('ui.narrator.action_convert', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'solo_kill')
+                                        {{ __('ui.narrator.action_solo_kill', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'protect')
+                                        {{ __('ui.narrator.action_protect', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'save')
+                                        {{ __('ui.narrator.action_save', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'poison')
+                                        {{ __('ui.narrator.action_poison', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'enchant')
+                                        {{ __('ui.narrator.action_enchant', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'sniff')
+                                        {{ __('ui.narrator.action_sniff', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'link_lovers')
+                                        {{ __('ui.narrator.action_love', ['name' => $action['target_nickname'] ?? '?']) }}
+                                    @elseif($action['action_type'] === 'choose_side')
+                                        {{ __('ui.narrator.action_choose_side') }}
+                                    @else
+                                        {{ __('ui.narrator.action_generic', ['type' => $action['action_type'], 'name' => $action['target_nickname'] ?? '?']) }}
+                                    @endif
+                                </p>
+                            </div>
+                        @empty
+                            <p class="text-[#5C4A1A] text-xs text-center italic">{{ __('ui.narrator.no_actions_yet') }}</p>
+                        @endforelse
+                    </div>
+                </div>
             </div>
         </div>
 

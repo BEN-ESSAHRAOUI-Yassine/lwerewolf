@@ -183,6 +183,11 @@ class ActionResolver
 
             $eliminatedNicknames = array_filter(array_unique($eliminatedNicknames));
 
+            $data = $state->data ?? [];
+            $data['last_night_deaths'] = array_values($eliminatedNicknames);
+            $state->data = $data;
+            $state->save();
+
             event(new NightResolved($state, array_values($eliminatedNicknames)));
         });
     }

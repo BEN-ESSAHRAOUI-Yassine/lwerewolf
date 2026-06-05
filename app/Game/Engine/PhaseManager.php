@@ -4,6 +4,7 @@ namespace App\Game\Engine;
 
 use App\Events\PhaseChanged;
 use App\Models\GameState;
+use App\Models\Vote;
 use InvalidArgumentException;
 
 class PhaseManager
@@ -26,8 +27,11 @@ class PhaseManager
             );
         }
 
-        if ($from === 'voting' && $toPhase === 'night') {
-            $state->round = ($state->round ?? 1) + 1;
+        if ($from === 'voting') {
+            Vote::where('game_state_id', $state->id)->delete();
+            if ($toPhase === 'night') {
+                $state->round = ($state->round ?? 1) + 1;
+            }
         }
 
         $state->phase = $toPhase;

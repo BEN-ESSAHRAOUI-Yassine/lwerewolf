@@ -16,6 +16,14 @@ class SeerInspectAction extends BaseAction
 
         $faction = $this->target->role?->faction ?? 'unknown';
 
+        $data = $state->data ?? [];
+        $data['seer_results'][$this->record->player_id] = [
+            'target_nickname' => $this->target->nickname,
+            'faction' => $faction,
+        ];
+        $state->data = $data;
+        $state->save();
+
         event(new SeerResultReady(
             $this->record->player,
             $this->target->nickname,

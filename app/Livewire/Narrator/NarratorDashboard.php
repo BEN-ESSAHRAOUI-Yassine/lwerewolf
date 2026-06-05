@@ -98,16 +98,12 @@ class NarratorDashboard extends Component
         ]);
 
         if ($room->gameState) {
+            $stateId = $room->gameState->id;
+
+            NightAction::where('game_state_id', $stateId)->delete();
+            Vote::where('game_state_id', $stateId)->delete();
+            CoupleBond::where('game_state_id', $stateId)->delete();
             GameState::where('room_id', $room->id)->delete();
-            NightAction::whereIn('game_state_id', function ($q) use ($room) {
-                $q->select('id')->from('game_states')->where('room_id', $room->id);
-            })->delete();
-            Vote::whereIn('game_state_id', function ($q) use ($room) {
-                $q->select('id')->from('game_states')->where('room_id', $room->id);
-            })->delete();
-            CoupleBond::whereIn('game_state_id', function ($q) use ($room) {
-                $q->select('id')->from('game_states')->where('room_id', $room->id);
-            })->delete();
         }
 
         event(new GameReset($room));
@@ -296,6 +292,8 @@ class NarratorDashboard extends Component
             'little_girl', 'seer', 'witch', 'pied_piper', 'fox', 'bear_tamer',
         ];
 
+        $actionHistory = $this->state->data['action_history'] ?? [];
+
         return view('livewire.narrator.narrator-dashboard', [
             'players' => $players,
             'availableTransitions' => $availableTransitions,
@@ -306,6 +304,7 @@ class NarratorDashboard extends Component
             'enchantedIds' => $enchantedIds,
             'nightOrder' => $nightOrder,
             'state' => $this->state,
+            'actionHistory' => $actionHistory,
         ])->layout('layouts.app');
     }
 

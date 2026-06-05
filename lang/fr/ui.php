@@ -113,6 +113,7 @@ return [
         'unknown_role' => 'Rôle inconnu',
         'lover_short' => 'Amoureux',
         'enchanted_short' => 'Envoûté',
+        'last_night' => 'La nuit dernière',
     ],
     'narrator' => [
         'pending_actions' => 'Actions en attente',
@@ -146,6 +147,7 @@ return [
         'action_choose_side' => 'A choisi son camp',
         'action_generic' => ':type → :name',
         'waiting_for_new_game' => 'En attente que le narrateur démarre une nouvelle partie...',
+        'action_history' => 'Historique des actions',
     ],
     'role' => [
         'hold_to_reveal' => 'Maintenez pour révéler',
