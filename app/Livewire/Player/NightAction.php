@@ -16,6 +16,7 @@ class NightAction extends Component
     public bool $confirming = false;
     public ?NightActionModel $submittedAction = null;
     public array $alivePlayers = [];
+    public bool $isDecoy = false;
 
     public function mount(Room $room, Player $player)
     {
@@ -33,7 +34,6 @@ class NightAction extends Component
         if (!$state || $state->phase !== 'night') return;
 
         $role = $player->role;
-        if (!$role) return;
 
         $this->alivePlayers = Player::where('room_id', $room->id)
             ->where('is_alive', true)
@@ -52,40 +52,14 @@ class NightAction extends Component
             $this->submitted = true;
             $this->submittedAction = $existing;
         }
+
+        $this->isDecoy = !$role || $role->night_order === null;
     }
 
     public function selectTarget(string $targetId)
     {
         $this->selectedTargetId = $targetId;
         $this->confirming = true;
-    }
-
-    public function confirmSubmit()
-    {
-        $requestPlayer = request()->get('_player');
-        if (!$requestPlayer || $requestPlayer->id !== $this->player->id) {
-            abort(403);
-        }
-
-        $state = $this->room->gameState;
-        if (!$state || $state->phase !== 'night' || !$this->player->is_alive) return;
-
-        $role = $this->player->role;
-        if (!$role || $role->night_order === null) return;
-
-        $actionType = $this->getActionTypeForRole($role->key);
-        if (!$actionType) return;
-
-        $action = app(\App\Game\Services\ActionService::class)->submit($this->player, [
-            'action_type' => $actionType,
-            'target_id' => $this->selectedTargetId,
-        ]);
-
-        if ($action) {
-            $this->submitted = true;
-            $this->submittedAction = $action;
-            $this->confirming = false;
-        }
     }
 
     public function cancelSelection()
@@ -111,16 +85,47 @@ class NightAction extends Component
         };
     }
 
+    public function confirmSubmit()
+    {
+        $requestPlayer = request()->get('_player');
+        if (!$requestPlayer || $requestPlayer->id !== $this->player->id) {
+            abort(403);
+        }
+
+        $state = $this->room->gameState;
+        if (!$state || $state->phase !== 'night' || !$this->player->is_alive) return;
+
+        if ($this->isDecoy) {
+            $this->submitted = true;
+            $this->confirming = false;
+            return;
+        }
+
+        $role = $this->player->role;
+        if (!$role || $role->night_order === null) return;
+
+        $actionType = $this->getActionTypeForRole($role->key);
+        if (!$actionType) return;
+
+        $action = app(\App\Game\Services\ActionService::class)->submit($this->player, [
+            'action_type' => $actionType,
+            'target_id' => $this->selectedTargetId,
+        ]);
+
+        if ($action) {
+            $this->submitted = true;
+            $this->submittedAction = $action;
+            $this->confirming = false;
+        }
+    }
+
     public function render()
     {
         $role = $this->player->role;
 
-        if (!$this->player->is_alive || $this->player->is_narrator || !$role || $role->night_order === null) {
-            return '<div></div>';
-        }
-
         return view('livewire.player.night-action', [
             'role' => $role,
+            'isDecoy' => $this->isDecoy,
         ]);
     }
 }

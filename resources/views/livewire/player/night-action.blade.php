@@ -1,6 +1,7 @@
 <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 w-full max-w-md"
      x-data="{ revealed: false }">
     @if($submitted && $submittedAction)
+        {{-- Real action submitted --}}
         <div class="text-center"
              x-on:mousedown="revealed = true"
              x-on:mouseup="revealed = false"
@@ -8,18 +9,35 @@
              x-on:touchstart="revealed = true"
              x-on:touchend="revealed = false"
         >
-            {{-- Masked --}}
             <div x-show="!revealed" class="py-4">
                 <div class="text-3xl mb-2 text-[#C8922A]/40">&#10003;</div>
                 <p class="text-[#9A8A6A]">{{ __('ui.action.submitted') }}</p>
             </div>
-            {{-- Revealed --}}
             <div x-show="revealed" x-cloak class="py-4">
                 <p class="text-[#9A8A6A] text-xs uppercase tracking-widest">{{ __("roles.{$role->key}.name") }}</p>
                 <p class="text-[#E8D9B5] text-lg mt-2">{{ __("ui.action.{$submittedAction->action_type}") }}</p>
                 @if($submittedAction->target)
                     <p class="text-[#C8922A] mt-1">{{ $submittedAction->target->nickname }}</p>
                 @endif
+            </div>
+        </div>
+    @elseif($submitted && $isDecoy)
+        {{-- Decoy submitted --}}
+        <div class="text-center"
+             x-on:mousedown="revealed = true"
+             x-on:mouseup="revealed = false"
+             x-on:mouseleave="revealed = false"
+             x-on:touchstart="revealed = true"
+             x-on:touchend="revealed = false"
+        >
+            <div x-show="!revealed" class="py-4">
+                <div class="text-3xl mb-2 text-[#C8922A]/40">&#10003;</div>
+                <p class="text-[#9A8A6A]">{{ __('ui.action.submitted') }}</p>
+            </div>
+            <div x-show="revealed" x-cloak class="py-4">
+                @php $targetName = collect($alivePlayers)->firstWhere('id', $selectedTargetId)['nickname'] ?? ''; @endphp
+                <p class="text-[#9A8A6A] text-xs uppercase tracking-widest">{{ __('ui.action.decoy_submitted') }}</p>
+                <p class="text-[#C8922A] mt-1">{{ $targetName }}</p>
             </div>
         </div>
     @elseif($confirming && $selectedTargetId)
@@ -34,7 +52,7 @@
         </div>
     @else
         <div class="text-center">
-            <p class="text-[#9A8A6A] text-sm mb-4">{{ __("ui.roles.{$role->key}.action_prompt") }}</p>
+            <p class="text-[#9A8A6A] text-sm mb-4">{{ $isDecoy ? __('ui.action.decoy_select') : __("ui.roles.{$role->key}.action_prompt") }}</p>
             <div class="space-y-2 max-h-64 overflow-y-auto">
                 @foreach($alivePlayers as $p)
                     <button

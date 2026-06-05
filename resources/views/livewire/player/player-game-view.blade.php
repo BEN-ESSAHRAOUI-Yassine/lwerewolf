@@ -246,12 +246,8 @@
                 <div class="bg-[#1A1510] border border-[#8B2020] rounded-xl p-6 text-center">
                     <p class="text-[#8B2020]">{{ __('ui.game.you_are_dead') }}</p>
                 </div>
-            @elseif($state->phase === 'night' && $player->role && $player->role->night_order !== null && !$player->is_narrator)
+            @elseif($state->phase === 'night' && !$player->is_narrator)
                 <livewire:player.night-action :room="$room" :player="$player" :wire:key="'night-action-'.$player->id" />
-            @elseif($state->phase === 'night')
-                <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
-                    <p class="text-[#9A8A6A] italic">{{ __('ui.game.decoy_prompt') }}</p>
-                </div>
             @elseif($state->phase === 'voting' && !$player->is_narrator)
                 <livewire:player.voting-panel :room="$room" :player="$player" :wire:key="'voting-'.$player->id" />
             @elseif($state->phase === 'day' && !$mySeerResult && !$myFoxResult)

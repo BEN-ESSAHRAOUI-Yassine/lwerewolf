@@ -44,6 +44,8 @@ return [
 
     'action' => [
         'submitted' => 'Action submitted',
+        'decoy_select' => 'Select a player to watch',
+        'decoy_submitted' => 'Watching',
         'choose_target' => 'Choose a target',
         'confirm_action' => 'Confirm action?',
         'kill' => 'Kill',

@@ -44,6 +44,8 @@ return [
 
     'action' => [
         'submitted' => 'Action soumise',
+        'decoy_select' => 'Sélectionnez un joueur à observer',
+        'decoy_submitted' => 'Observation',
         'choose_target' => 'Choisissez une cible',
         'confirm_action' => 'Confirmer l\'action ?',
         'kill' => 'Tuer',
