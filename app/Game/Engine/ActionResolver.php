@@ -127,7 +127,10 @@ class ActionResolver
                         return;
                     }
                 } elseif ($action instanceof CupidLinkAction) {
-                    $action->resolve($state);
+                    $bondsExist = CoupleBond::where('game_state_id', $state->id)->exists();
+                    if (!$bondsExist) {
+                        $action->resolve($state);
+                    }
                 }
             }
 
@@ -239,29 +242,21 @@ class ActionResolver
                     $this->engine()->endGame($state, $winner);
                     return;
                 }
-                continue;
+            } else {
+                $eliminatedNicknames[] = $player->nickname;
+                $player->is_alive = false;
+                $player->save();
+
+                event(new PlayerEliminated($player));
+
+                $winner = $this->winChecker->check($state);
+                if ($winner) {
+                    $this->engine()->endGame($state, $winner);
+                    return;
+                }
             }
 
             // Knight with Rusty Sword — mark werewolf killer
-            if ($role && $role->key === 'knight_with_rusty_sword') {
-                $data = $state->data ?? [];
-                $data['knight_killed_by_werewolf'] = true;
-                $data['infected_werewolf_id'] = null;
-                $state->data = $data;
-                $state->save();
-            }
-
-            $eliminatedNicknames[] = $player->nickname;
-            $player->is_alive = false;
-            $player->save();
-
-            event(new PlayerEliminated($player));
-
-            $winner = $this->winChecker->check($state);
-            if ($winner) {
-                $this->engine()->endGame($state, $winner);
-                return;
-            }
 
             // Lover death chain
             $bond = CoupleBond::where('game_state_id', $state->id)

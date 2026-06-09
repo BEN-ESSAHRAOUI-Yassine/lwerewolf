@@ -17,6 +17,8 @@ class NightAction extends Component
     public ?NightActionModel $submittedAction = null;
     public array $alivePlayers = [];
     public bool $isDecoy = false;
+    public ?string $secondTargetId = null;
+    public int $cupidStep = 0;
 
     public function mount(Room $room, Player $player)
     {
@@ -54,10 +56,26 @@ class NightAction extends Component
         }
 
         $this->isDecoy = !$role || $role->night_order === null;
+
+        if ($role && $role->key === 'cupid' && !$existing) {
+            $bondsExist = \App\Models\CoupleBond::where('game_state_id', $state->id)->exists();
+            if ($state->round !== 1 || $bondsExist) {
+                $this->isDecoy = true;
+            }
+        }
     }
 
     public function selectTarget(string $targetId)
     {
+        $state = $this->room->gameState;
+        $role = $this->player->role;
+        if ($role && $role->key === 'cupid' && $this->cupidStep === 0) {
+            $bondsExist = \App\Models\CoupleBond::where('game_state_id', $state->id)->exists();
+            if ($state->round !== 1 || $bondsExist) return;
+            $this->selectedTargetId = $targetId;
+            $this->cupidStep = 1;
+            return;
+        }
         $this->selectedTargetId = $targetId;
         $this->confirming = true;
     }
@@ -65,7 +83,9 @@ class NightAction extends Component
     public function cancelSelection()
     {
         $this->selectedTargetId = null;
+        $this->secondTargetId = null;
         $this->confirming = false;
+        $this->cupidStep = 0;
     }
 
     private function getActionTypeForRole(string $roleKey): ?string
@@ -104,6 +124,22 @@ class NightAction extends Component
         $role = $this->player->role;
         if (!$role || $role->night_order === null) return;
 
+        if ($role->key === 'cupid') {
+            $bondsExist = \App\Models\CoupleBond::where('game_state_id', $state->id)->exists();
+            if ($state->round !== 1 || $bondsExist) return;
+            $action = app(\App\Game\Services\ActionService::class)->submit($this->player, [
+                'action_type' => 'link_lovers',
+                'target_id' => $this->selectedTargetId,
+                'metadata' => ['partner_id' => $this->secondTargetId],
+            ]);
+            if ($action) {
+                $this->submitted = true;
+                $this->submittedAction = $action;
+                $this->confirming = false;
+            }
+            return;
+        }
+
         $actionType = $this->getActionTypeForRole($role->key);
         if (!$actionType) return;
 
@@ -126,6 +162,8 @@ class NightAction extends Component
         return view('livewire.player.night-action', [
             'role' => $role,
             'isDecoy' => $this->isDecoy,
+            'cupidStep' => $this->cupidStep,
+            'secondTargetId' => $this->secondTargetId,
         ]);
     }
 }

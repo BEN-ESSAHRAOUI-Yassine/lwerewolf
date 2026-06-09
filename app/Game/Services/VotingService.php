@@ -172,13 +172,11 @@ class VotingService
 
                 $winner = $this->winChecker->check($state);
                 if ($winner) return $winner;
-
-                continue;
+            } else {
+                $current->is_alive = false;
+                $current->save();
+                event(new PlayerEliminated($current));
             }
-
-            $current->is_alive = false;
-            $current->save();
-            event(new PlayerEliminated($current));
 
             if ($checkAngelForThis && $role && $role->key === 'angel') {
                 $data = $state->data ?? [];

@@ -1,4 +1,5 @@
-<div class="min-h-screen flex flex-col items-center justify-center p-8"
+<div class="min-h-screen flex flex-col items-center justify-center p-8 select-none"
+     wire:poll.10s="pollGameState"
      x-data="{
          showOverlay: false,
          phaseLabel: '',
@@ -42,11 +43,13 @@
     {{-- Result notification --}}
     <div x-show="resultNotif" x-cloak
          class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#1A1510] border-2 rounded-xl px-6 py-4 shadow-2xl max-w-md w-full text-center"
-         :class="{
-             'border-[#C8922A]': resultNotif?.type === 'seer' || resultNotif?.type === 'fox',
-             'border-[#8B2020]': resultNotif?.type === 'night_resolved' || resultNotif?.type === 'lover_died',
-             'border-[#C8922A]/60': resultNotif?.type === 'village_idiot',
-         }"
+             :class="{
+                 'border-[#C8922A]': resultNotif?.type === 'seer' || resultNotif?.type === 'fox',
+                 'border-[#8B2020]': resultNotif?.type === 'night_resolved' || resultNotif?.type === 'lover_died',
+                 'border-[#C8922A]/60': resultNotif?.type === 'village_idiot',
+                 'border-pink-500/60': resultNotif?.type === 'lovers_revealed',
+                 'border-[#8AB8E8]/60': resultNotif?.type === 'narrator_msg',
+             }"
          x-transition:enter="transition-all duration-300"
          x-transition:enter-start="opacity-0 -translate-y-4"
          x-transition:enter-end="opacity-100 translate-y-0"
@@ -81,6 +84,22 @@
                     <span x-text="resultNotif.partner_nickname"></span>
                     {{ __('ui.result.lover_died_text') }}
                 </p>
+            </div>
+        </template>
+
+        {{-- Lovers revealed --}}
+        <template x-if="resultNotif?.type === 'lovers_revealed'">
+            <div>
+                <p class="text-pink-400 text-lg font-bold">{{ __('ui.result.lover_info_title') }}</p>
+                <p class="text-[#E8D9B5] mt-1" x-text="resultNotif.partner_nickname"></p>
+            </div>
+        </template>
+
+        {{-- Narrator message --}}
+        <template x-if="resultNotif?.type === 'narrator_msg'">
+            <div>
+                <p class="text-[#8AB8E8] text-xs uppercase tracking-widest">{{ __('ui.narrator.title') }}</p>
+                <p class="text-[#E8D9B5] mt-1" x-text="resultNotif.message"></p>
             </div>
         </template>
 
@@ -237,6 +256,37 @@
                                     class="text-[#6A5A4A] hover:text-[#C8922A] text-lg leading-none">&times;</button>
                         </div>
                     @endif
+                </div>
+            </div>
+        @endif
+
+        @php
+            $myLoverInfo = $state->data['lover_info'][$player->id] ?? null;
+        @endphp
+
+        @if($myLoverInfo)
+            <div class="mt-6 w-full max-w-md"
+                 x-data="{ revealed: false }"
+                 x-on:mousedown="revealed = true"
+                 x-on:mouseup="revealed = false"
+                 x-on:mouseleave="revealed = false"
+                 x-on:touchstart="revealed = true"
+                 x-on:touchend="revealed = false">
+                <div x-show="!revealed"
+                     class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 text-center">
+                    <p class="text-[#9A8A6A]">{{ __('ui.game.discussion_time') }}</p>
+                </div>
+                <div x-show="revealed" x-cloak
+                     class="bg-[#1A1510] border border-[#C8922A]/60 rounded-xl p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="text-[#9A8A6A] text-xs uppercase tracking-widest">{{ __('ui.result.lover_info_title') }}</p>
+                            <p class="text-[#E8D9B5] text-sm mt-1">{{ $myLoverInfo['partner_nickname'] }}</p>
+                            <p class="text-[#C8922A] text-xs mt-1">{{ __("roles.{$myLoverInfo['partner_role_key']}.name") }}</p>
+                        </div>
+                        <button wire:click="dismissResult('lover')"
+                                class="text-[#6A5A4A] hover:text-[#C8922A] text-lg leading-none">&times;</button>
+                    </div>
                 </div>
             </div>
         @endif

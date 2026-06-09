@@ -54,6 +54,8 @@ class PlayerGameView extends Component
             "echo-private:player.{$this->player->id},RoleAssigned" => 'onRoleAssigned',
             "echo-private:player.{$this->player->id},SeerResultReady" => 'onSeerResult',
             "echo-private:player.{$this->player->id},FoxResultReady" => 'onFoxResult',
+            "echo-private:room.{$this->room->id},LoversRevealed" => 'onLoversRevealed',
+            "echo-private:player.{$this->player->id},NarratorMessageSent" => 'onNarratorMessage',
         ];
     }
 
@@ -85,23 +87,23 @@ class PlayerGameView extends Component
         $this->state = $this->state->fresh();
     }
 
-    public function hydrate(): void
+    public function pollGameState(): void
     {
         $room = $this->room ?? null;
-        if ($room && !$room->gameState) {
-            $this->redirect(route('lobby.player', $room));
+        if (!$room || !$room->gameState) {
+            $this->redirect(route('lobby.player', $room ?? $this->room));
         }
     }
 
     public function onPlayerEliminated()
     {
         $this->player = $this->player->fresh(['role']);
-        $this->state = $this->room->gameState;
+        $this->state = GameState::where('room_id', $this->room->id)->first();
     }
 
     public function onGameFinished()
     {
-        $this->state = $this->room->gameState;
+        $this->state = GameState::where('room_id', $this->room->id)->first();
     }
 
     public function onRoleAssigned()
@@ -139,7 +141,11 @@ class PlayerGameView extends Component
     {
         if (!$this->state) return;
         $data = $this->state->data ?? [];
-        unset($data[$type . '_results'][$this->player->id]);
+        if ($type === 'lover') {
+            unset($data['lover_info'][$this->player->id]);
+        } else {
+            unset($data[$type . '_results'][$this->player->id]);
+        }
         $this->state->data = $data;
         $this->state->save();
     }
@@ -164,7 +170,7 @@ class PlayerGameView extends Component
 
     public function onNightResolved(array $payload)
     {
-        $this->state = $this->room?->gameState;
+        $this->state = GameState::where('room_id', $this->room->id)->first();
         $this->dispatch('show-night-resolved', [
             'eliminated' => $payload['eliminated'] ?? [],
         ]);
@@ -192,9 +198,29 @@ class PlayerGameView extends Component
         $this->redirect(route('lobby.player', $this->room));
     }
 
+    public function onLoversRevealed()
+    {
+        $this->state = GameState::where('room_id', $this->room->id)->first();
+        $myLoverInfo = $this->state->data['lover_info'][$this->player->id] ?? null;
+        if ($myLoverInfo) {
+            $this->dispatch('show-result', [
+                'type' => 'lovers_revealed',
+                'partner_nickname' => $myLoverInfo['partner_nickname'] ?? '',
+            ]);
+        }
+    }
+
+    public function onNarratorMessage(array $payload)
+    {
+        $this->dispatch('show-result', [
+            'type' => 'narrator_msg',
+            'message' => $payload['message'] ?? '',
+        ]);
+    }
+
     public function render()
     {
-        $this->state = $this->room?->gameState;
+        $this->state = GameState::where('room_id', $this->room->id)->first();
 
         if (!$this->state) {
             $this->redirect(route('lobby.player', $this->room));

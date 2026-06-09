@@ -60,6 +60,15 @@
         {{-- ===== PHASE CONTROLS ===== --}}
         @if(count($availableTransitions) > 0 && $state->phase !== 'finished')
             <div class="flex flex-wrap gap-3 mb-6 justify-center">
+                @if($canRevealLovers)
+                    <button
+                        wire:click="revealLovers"
+                        wire:confirm="{{ __('ui.narrator.confirm_reveal_lovers') }}"
+                        class="px-6 py-3 rounded-lg font-semibold transition-colors duration-200 text-sm bg-pink-900/30 text-pink-400 hover:bg-pink-900/50 border border-pink-800/40"
+                    >
+                        {{ __('ui.narrator.reveal_lovers') }}
+                    </button>
+                @endif
                 @foreach($availableTransitions as $target)
                     <button
                         wire:click="advancePhase('{{ $target }}')"
@@ -121,6 +130,15 @@
                                 </div>
                             @else
                                 <p class="text-[#5C4A1A] text-xs italic">{{ __('ui.game.no_role') }}</p>
+                            @endif
+                            @if($p->is_alive)
+                                <div class="flex gap-2 mt-2 justify-end">
+                                    <button wire:click="openMessageDialog({{ $p->id }})"
+                                            class="text-[#6A9AB8] text-[10px] hover:text-[#8AB8E8] bg-[#1A3A5C]/30 px-2 py-0.5 rounded transition-colors">{{ __('ui.narrator.msg_btn') }}</button>
+                                    <button wire:click="kickPlayer({{ $p->id }})"
+                                            wire:confirm="{{ __('ui.narrator.confirm_kick') }}"
+                                            class="text-[#8B4040] text-[10px] hover:text-[#B85A5A] bg-[#8B2020]/20 px-2 py-0.5 rounded transition-colors">{{ __('ui.narrator.kick_btn') }}</button>
+                                </div>
                             @endif
                         </div>
                     @empty
@@ -206,6 +224,22 @@
                     </div>
                 @endif
 
+                {{-- Relations table --}}
+                @if(count($relations) > 0)
+                    <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-4">
+                        <h2 class="text-[#E8D9B5] text-sm font-semibold mb-3">{{ __('ui.narrator.relations_title') }}</h2>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto">
+                            @foreach($relations as $rel)
+                                <div class="flex items-center justify-between px-2.5 py-2 bg-[#251E16]/30 rounded text-xs border-l-2 border-pink-800/50">
+                                    <span class="text-[#E8D9B5]">{{ $rel['player_a']->nickname }}</span>
+                                    <span class="text-pink-400/70 px-2">{{ __('ui.result.type_lovers') }}</span>
+                                    <span class="text-[#E8D9B5]">{{ $rel['player_b']->nickname }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Game log --}}
                 <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-4">
                     <h2 class="text-[#9A8A6A] text-sm font-semibold mb-3">{{ __('ui.narrator.game_log') }}</h2>
@@ -218,7 +252,10 @@
                                 {{ $entry['type'] === 'vote_submitted' ? 'text-[#9A8A6A] bg-[#9A8A6A]/5' : '' }}
                                 {{ $entry['type'] === 'voting_resolved' ? 'text-[#E8A88A] bg-[#E8A88A]/5' : '' }}
                                 {{ $entry['type'] === 'suspicious_access' ? 'text-[#E8B5B5] bg-[#8B2020]/10' : '' }}
-                                {{ $entry['type'] === 'game_started' ? 'text-[#C8922A] bg-[#C8922A]/10' : '' }}">
+                                {{ $entry['type'] === 'game_started' ? 'text-[#C8922A] bg-[#C8922A]/10' : '' }}
+                                {{ $entry['type'] === 'lovers_revealed' ? 'text-pink-400 bg-pink-900/10' : '' }}
+                                {{ $entry['type'] === 'player_kicked' ? 'text-[#8B4040] bg-[#8B2020]/10' : '' }}
+                                {{ $entry['type'] === 'narrator_message' ? 'text-[#8AB8E8] bg-[#1A3A5C]/20' : '' }}">
                                 <span class="text-[#5C4A1A] mr-1.5">{{ \Carbon\Carbon::parse($entry['timestamp'])->isoFormat('HH:mm') }}</span>
                                 @if($entry['type'] === 'phase_changed')
                                     [{{ __('ui.phase.' . ($entry['from'] ?? 'unknown')) }} → {{ __('ui.phase.' . ($entry['to'] ?? 'unknown')) }}]
@@ -234,6 +271,12 @@
                                     {{ __('ui.narrator.log_suspicious', ['nickname' => $entry['player_nickname'] ?? '?', 'details' => $entry['details'] ?? '']) }}
                                 @elseif($entry['type'] === 'game_started')
                                     {{ __('ui.narrator.log_game_started') }}
+                                @elseif($entry['type'] === 'lovers_revealed')
+                                    {{ __('ui.narrator.log_lovers_revealed', ['a' => $entry['lover_a'] ?? '?', 'b' => $entry['lover_b'] ?? '?']) }}
+                                @elseif($entry['type'] === 'player_kicked')
+                                    {{ __('ui.narrator.log_player_kicked', ['nickname' => $entry['nickname'] ?? '?']) }}
+                                @elseif($entry['type'] === 'narrator_message')
+                                    {{ __('ui.narrator.log_narrator_message', ['target_nickname' => $entry['target_nickname'] ?? '?']) }}
                                 @elseif($entry['type'] === 'game_finished')
                                     {{ __('ui.narrator.log_game_finished', ['faction' => __("ui.win.{$entry['winning_faction']}")]) }}
                                 @else
@@ -294,7 +337,23 @@
             </div>
         </div>
 
-        {{-- ===== GAME OVER SCREEN ===== --}}
+            {{-- ===== MESSAGE INPUT OVERLAY ===== --}}
+            @if($messageTargetId)
+                <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-40" wire:click.self="cancelMessage">
+                    <div class="bg-[#1A1510] border border-[#251E16] rounded-xl p-6 max-w-md w-full mx-4">
+                        <p class="text-[#E8D9B5] text-sm mb-1">{{ __('ui.narrator.message_for', ['name' => $messageRecipient]) }}</p>
+                        <textarea wire:model="messageText" rows="3"
+                            class="w-full bg-[#251E16] text-[#E8D9B5] border border-[#3A3530] rounded-lg p-3 text-sm mt-2 resize-none focus:border-[#C8922A] focus:outline-none"
+                            placeholder="{{ __('ui.narrator.message_placeholder') }}"></textarea>
+                        <div class="flex gap-3 justify-end mt-4">
+                            <button wire:click="cancelMessage" class="px-4 py-2 bg-[#251E16] text-[#9A8A6A] rounded-lg hover:bg-[#3A3530]">{{ __('ui.button.cancel') }}</button>
+                            <button wire:click="sendMessage" class="px-4 py-2 bg-[#3A6B3A] text-[#E8D9B5] rounded-lg hover:bg-[#4A7B4A]">{{ __('ui.button.send') }}</button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- ===== GAME OVER SCREEN ===== --}}
         @if($state->phase === 'finished')
             <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
                 <div class="bg-[#1A1510] border-2 border-[#C8922A] rounded-2xl p-8 max-w-lg w-full mx-4 text-center">

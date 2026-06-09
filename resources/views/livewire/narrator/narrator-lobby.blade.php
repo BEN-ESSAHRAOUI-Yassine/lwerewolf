@@ -22,9 +22,21 @@
         </div>
 
         {{-- Right: Players --}}
-<div wire:poll.3s>
+<div>
             <h2 class="text-[#E8D9B5] font-semibold mb-4">{{ __('ui.lobby.connected_players') }}</h2>
-            <livewire:shared.player-list :room="$room" :wire:key="'player-list-'.$room->id" />
+            <div class="space-y-2">
+                @forelse($players as $p)
+                    <div class="flex items-center gap-3 px-4 py-3 bg-[#1A1510] rounded-lg border border-[#251E16]">
+                        <div class="w-2 h-2 rounded-full bg-[#3A6B3A]"></div>
+                        <span class="text-[#E8D9B5] flex-1">{{ $p->nickname }}</span>
+                        <button wire:click="removePlayer({{ $p->id }})"
+                                wire:confirm="{{ __('ui.lobby.confirm_remove') }}"
+                                class="text-[#8B4040] text-xs hover:text-[#B85A5A] bg-[#8B2020]/20 px-2 py-1 rounded transition-colors">{{ __('ui.lobby.remove_btn') }}</button>
+                    </div>
+                @empty
+                    <p class="text-[#9A8A6A] text-center py-8">{{ __('ui.lobby.no_players_yet') }}</p>
+                @endforelse
+            </div>
         </div>
     </div>
 

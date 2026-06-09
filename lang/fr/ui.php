@@ -10,6 +10,7 @@ return [
         'cancel' => 'Annuler',
         'next' => 'Suivant',
         'submit' => 'Envoyer',
+        'send' => 'Envoyer',
         'remove' => 'Retirer',
     ],
     'lobby' => [
@@ -29,6 +30,8 @@ return [
         'you_joined_as' => 'Vous avez rejoint en tant que',
         'waiting_narrator' => 'En attente que le narrateur commence...',
         'code_placeholder' => 'Code de la partie',
+        'remove_btn' => 'Retirer',
+        'confirm_remove' => 'Retirer ce joueur de la partie ?',
     ],
     'phase' => [
         'night' => 'Nuit',
@@ -71,7 +74,9 @@ return [
         'witch' => ['action_prompt' => 'Choisissez une cible pour votre potion'],
         'pied_piper' => ['action_prompt' => 'Choisissez un joueur à envoûter'],
         'fox' => ['action_prompt' => 'Choisissez 3 joueurs adjacents à renifler'],
-        'cupid' => ['action_prompt' => 'Choisissez le premier amoureux'],
+        'cupid' => ['action_prompt' => 'Choisissez le premier amoureux', 'action_prompt_first' => 'Choisissez le premier amoureux',
+            'action_prompt_second' => 'Choisissez le second amoureux',
+        ],
     ],
     'vote' => [
         'title' => 'Qui éliminer ?',
@@ -97,6 +102,8 @@ return [
         'idiot_revealed' => 'Idiot du village révélé !',
         'faction_label' => 'Faction',
         'your_results' => 'Vos résultats de la nuit',
+        'lover_info_title' => 'Vous êtes lié(e) à',
+        'type_lovers' => 'Amoureux',
     ],
     'game' => [
         'over' => 'Partie terminée',
@@ -119,6 +126,7 @@ return [
         'last_night' => 'La nuit dernière',
     ],
     'narrator' => [
+        'title' => 'Narrateur',
         'pending_actions' => 'Actions en attente',
         'confirm_transition' => 'Passer à la phase suivante ?',
         'confirm_new_game' => 'Démarrer une nouvelle partie avec les mêmes joueurs ?',
@@ -151,6 +159,18 @@ return [
         'action_generic' => ':type → :name',
         'waiting_for_new_game' => 'En attente que le narrateur démarre une nouvelle partie...',
         'action_history' => 'Historique des actions',
+        'reveal_lovers' => 'Révéler les amoureux',
+        'confirm_reveal_lovers' => 'Révéler les amoureux l\'un à l\'autre ?',
+        'lovers_revealed_public' => 'Les amoureux ont été révélés.',
+        'log_lovers_revealed' => 'Amoureux révélés : :a & :b',
+        'relations_title' => 'Relations',
+        'msg_btn' => 'Msg',
+        'message_for' => 'Message pour :name',
+        'message_placeholder' => 'Tapez votre message...',
+        'kick_btn' => 'Exclure',
+        'confirm_kick' => 'Exclure ce joueur de la partie ? Il sera marqué comme mort.',
+        'log_player_kicked' => ':nickname a été exclu(e) de la partie',
+        'log_narrator_message' => 'Message envoyé à :target_nickname',
     ],
     'role' => [
         'hold_to_reveal' => 'Maintenez pour révéler',

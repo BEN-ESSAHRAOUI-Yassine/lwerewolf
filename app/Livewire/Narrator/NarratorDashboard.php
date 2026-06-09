@@ -3,6 +3,8 @@
 namespace App\Livewire\Narrator;
 
 use App\Events\GameReset;
+use App\Events\LoversRevealed;
+use App\Events\NarratorMessageSent;
 use App\Events\SuspiciousAccessAttempt;
 use App\Game\Engine\GameEngine;
 use App\Models\CoupleBond;
@@ -22,6 +24,9 @@ class NarratorDashboard extends Component
     public array $gameLog = [];
     public array $nightActionFeed = [];
     public array $pendingRoles = [];
+    public ?int $messageTargetId = null;
+    public string $messageText = '';
+    public string $messageRecipient = '';
 
     public function mount(Room $room)
     {
@@ -75,6 +80,133 @@ class NarratorDashboard extends Component
         } catch (\InvalidArgumentException $e) {
             session()->flash('error', $e->getMessage());
         }
+    }
+
+    public function revealLovers()
+    {
+        $requestPlayer = request()->get('_player');
+        if (!$requestPlayer || !$requestPlayer->is_narrator || $requestPlayer->room_id !== $this->room->id) {
+            event(new SuspiciousAccessAttempt($requestPlayer ?? $this->player, 'Non-narrator attempted reveal lovers'));
+            $this->redirect(route('home'));
+            return;
+        }
+
+        if ($this->state->phase !== 'night') return;
+
+        $bondsExist = CoupleBond::where('game_state_id', $this->state->id)->exists();
+        if ($bondsExist) return;
+
+        $cupidAction = NightAction::where('game_state_id', $this->state->id)
+            ->where('action_type', 'link_lovers')
+            ->whereNull('resolved_at')
+            ->with('target')
+            ->first();
+
+        if (!$cupidAction || !$cupidAction->target) return;
+
+        $metadata = $cupidAction->metadata ?? [];
+        $partnerId = $metadata['partner_id'] ?? null;
+        if (!$partnerId) return;
+
+        $partner = Player::find($partnerId);
+        if (!$partner) return;
+
+        CoupleBond::create([
+            'game_state_id' => $this->state->id,
+            'player_id' => $cupidAction->target->id,
+            'partner_id' => $partnerId,
+        ]);
+        CoupleBond::create([
+            'game_state_id' => $this->state->id,
+            'player_id' => $partnerId,
+            'partner_id' => $cupidAction->target->id,
+        ]);
+
+        $data = $this->state->data;
+        $data['lover_info'][$cupidAction->target->id] = [
+            'partner_nickname' => $partner->nickname,
+            'partner_role_key' => $partner->role?->key ?? 'villager',
+        ];
+        $data['lover_info'][$partnerId] = [
+            'partner_nickname' => $cupidAction->target->nickname,
+            'partner_role_key' => $cupidAction->target->role?->key ?? 'villager',
+        ];
+        $this->state->data = $data;
+        $this->state->save();
+
+        $this->state = $this->state->fresh();
+        $this->addLogEntry('lovers_revealed', [
+            'lover_a' => $cupidAction->target->nickname,
+            'lover_b' => $partner->nickname,
+        ]);
+        $this->refreshNightFeed();
+
+        event(new LoversRevealed(
+            $this->room->id,
+            __('ui.narrator.lovers_revealed_public'),
+        ));
+    }
+
+    public function openMessageDialog(int $playerId)
+    {
+        $this->messageTargetId = $playerId;
+        $this->messageText = '';
+        $player = Player::find($playerId);
+        $this->messageRecipient = $player?->nickname ?? '';
+    }
+
+    public function cancelMessage()
+    {
+        $this->messageTargetId = null;
+        $this->messageText = '';
+        $this->messageRecipient = '';
+    }
+
+    public function sendMessage()
+    {
+        $requestPlayer = request()->get('_player');
+        if (!$requestPlayer || !$requestPlayer->is_narrator || $requestPlayer->room_id !== $this->room->id) {
+            abort(403);
+        }
+
+        if (!$this->messageTargetId || !trim($this->messageText)) return;
+
+        $player = Player::find($this->messageTargetId);
+        if (!$player || $player->room_id !== $this->room->id) return;
+
+        event(new NarratorMessageSent($player, $this->messageText));
+        $this->addLogEntry('narrator_message', [
+            'target_nickname' => $player->nickname,
+            'message' => $this->messageText,
+        ]);
+
+        $this->messageTargetId = null;
+        $this->messageText = '';
+        $this->messageRecipient = '';
+    }
+
+    public function kickPlayer(int $playerId)
+    {
+        $requestPlayer = request()->get('_player');
+        if (!$requestPlayer || !$requestPlayer->is_narrator || $requestPlayer->room_id !== $this->room->id) {
+            abort(403);
+        }
+
+        $player = Player::findOrFail($playerId);
+        if ($player->room_id !== $this->room->id || !$player->is_alive) return;
+
+        $player->is_alive = false;
+        $player->save();
+
+        $this->addLogEntry('player_kicked', ['nickname' => $player->nickname]);
+        $this->state = $this->state->fresh();
+
+        $winner = app(\App\Game\Engine\WinConditionChecker::class)->check($this->state);
+        if ($winner) {
+            app(\App\Game\Engine\GameEngine::class)->endGame($this->state, $winner);
+        }
+
+        $this->state = $this->state->fresh();
     }
 
     public function newGame()
@@ -277,14 +409,32 @@ class NarratorDashboard extends Component
 
         $totalAlive = $players->where('is_alive', true)->count();
 
-        $coupleBonds = CoupleBond::where('game_state_id', $this->state->id)->get();
+        $coupleBonds = CoupleBond::where('game_state_id', $this->state->id)->with(['player', 'partner'])->get();
         $loverMap = [];
+        $relations = [];
+        $seen = [];
         foreach ($coupleBonds as $bond) {
             $loverMap[$bond->player_id] = $bond->partner_id;
             $loverMap[$bond->partner_id] = $bond->player_id;
+            $key = min($bond->player_id, $bond->partner_id) . '-' . max($bond->player_id, $bond->partner_id);
+            if (in_array($key, $seen)) continue;
+            $seen[] = $key;
+            $relations[] = [
+                'player_a' => $bond->player,
+                'player_b' => $bond->partner,
+                'type' => 'lovers',
+            ];
         }
 
         $enchantedIds = $this->state->data['enchanted_player_ids'] ?? [];
+
+        $loversRevealed = CoupleBond::where('game_state_id', $this->state->id)->exists();
+        $canRevealLovers = $this->state->phase === 'night'
+            && !$loversRevealed
+            && NightAction::where('game_state_id', $this->state->id)
+                ->where('action_type', 'link_lovers')
+                ->whereNull('resolved_at')
+                ->exists();
 
         $nightOrder = [
             'cupid', 'wolf_hound', 'werewolf', 'big_bad_wolf',
@@ -301,7 +451,9 @@ class NarratorDashboard extends Component
             'voteCount' => $voteCount,
             'totalAlive' => $totalAlive,
             'loverMap' => $loverMap,
+            'relations' => $relations,
             'enchantedIds' => $enchantedIds,
+            'canRevealLovers' => $canRevealLovers,
             'nightOrder' => $nightOrder,
             'state' => $this->state,
             'actionHistory' => $actionHistory,

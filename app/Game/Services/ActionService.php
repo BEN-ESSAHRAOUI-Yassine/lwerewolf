@@ -3,6 +3,7 @@
 namespace App\Game\Services;
 
 use App\Events\NightActionSubmitted;
+use App\Models\CoupleBond;
 use App\Models\GameState;
 use App\Models\NightAction;
 use App\Models\Player;
@@ -32,6 +33,10 @@ class ActionService
             ->exists();
 
         if ($alreadySubmitted) return null;
+
+        if ($actionType === 'link_lovers' && ($state->round !== 1 || CoupleBond::where('game_state_id', $state->id)->exists())) {
+            return null;
+        }
 
         $target = $data['target_id'] ? Player::find($data['target_id']) : null;
 

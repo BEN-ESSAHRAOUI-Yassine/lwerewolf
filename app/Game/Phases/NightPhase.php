@@ -11,7 +11,7 @@ class NightPhase implements PhaseInterface
     public function allowsNightActions(): bool { return true; }
     public function allowsVoting(): bool { return false; }
     public function allowsDiscussion(): bool { return false; }
-    public function getNarratorControls(): array { return ['resolve_night', 'little_girl_caught']; }
+    public function getNarratorControls(): array { return ['resolve_night', 'little_girl_caught', 'reveal_lovers']; }
     public function onEntry(GameState $state): void {}
     public function onExit(GameState $state): void {}
 }

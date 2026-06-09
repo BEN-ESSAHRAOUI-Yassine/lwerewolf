@@ -10,6 +10,7 @@ return [
         'cancel' => 'Cancel',
         'next' => 'Next',
         'submit' => 'Submit',
+        'send' => 'Send',
         'remove' => 'Remove',
     ],
     'lobby' => [
@@ -29,6 +30,8 @@ return [
         'you_joined_as' => 'You joined as',
         'waiting_narrator' => 'Waiting for the narrator to start...',
         'code_placeholder' => 'Room code',
+        'remove_btn' => 'Remove',
+        'confirm_remove' => 'Remove this player from the room?',
     ],
     'phase' => [
         'night' => 'Night',
@@ -71,7 +74,9 @@ return [
         'witch' => ['action_prompt' => 'Choose a target for your potion'],
         'pied_piper' => ['action_prompt' => 'Choose a player to enchant'],
         'fox' => ['action_prompt' => 'Choose 3 adjacent players to sniff'],
-        'cupid' => ['action_prompt' => 'Choose the first lover'],
+        'cupid' => ['action_prompt' => 'Choose the first lover', 'action_prompt_first' => 'Choose the first lover',
+            'action_prompt_second' => 'Choose the second lover',
+        ],
     ],
     'vote' => [
         'title' => 'Who to eliminate?',
@@ -97,6 +102,8 @@ return [
         'idiot_revealed' => 'Village Idiot revealed!',
         'faction_label' => 'Faction',
         'your_results' => 'Your Night Results',
+        'lover_info_title' => 'You are linked with',
+        'type_lovers' => 'Lovers',
     ],
     'game' => [
         'over' => 'Game Over',
@@ -119,6 +126,7 @@ return [
         'last_night' => 'Last night',
     ],
     'narrator' => [
+        'title' => 'Narrator',
         'pending_actions' => 'Pending actions',
         'confirm_transition' => 'Advance to the next phase?',
         'confirm_new_game' => 'Start a new game with the same players?',
@@ -151,6 +159,18 @@ return [
         'action_generic' => ':type → :name',
         'waiting_for_new_game' => 'Waiting for the narrator to start a new game...',
         'action_history' => 'Action History',
+        'reveal_lovers' => 'Reveal Lovers',
+        'confirm_reveal_lovers' => 'Reveal the lovers to each other?',
+        'lovers_revealed_public' => 'The lovers have been revealed.',
+        'log_lovers_revealed' => 'Lovers revealed: :a & :b',
+        'relations_title' => 'Relations',
+        'msg_btn' => 'Msg',
+        'message_for' => 'Message for :name',
+        'message_placeholder' => 'Type your message...',
+        'kick_btn' => 'Kick',
+        'confirm_kick' => 'Kick this player from the game? They will be marked as dead.',
+        'log_player_kicked' => ':nickname was kicked from the game',
+        'log_narrator_message' => 'Message sent to :target_nickname',
     ],
     'role' => [
         'hold_to_reveal' => 'Hold to reveal',
